@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "183467337649",
+    "project_id": "doanmobi-eafbe",
+    "storage_bucket": "doanmobi-eafbe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:183467337649:android:4a6703afc0ec863609bf90",
+        "android_client_info": {
+          "package_name": "com.example.doan_mobi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8WyYyHxWuhEZJLYzcLeNKab6h3V5eWiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
