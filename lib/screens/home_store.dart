@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 
-class HomeUserScreen extends StatelessWidget {
-  const HomeUserScreen({super.key});
+class HomeStoreScreen extends StatelessWidget {
+  const HomeStoreScreen({super.key});
 
   void _handleLogout(BuildContext context) async {
     final auth = AuthService();
@@ -18,7 +18,7 @@ class HomeUserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trang người dùng'),
+        title: const Text('Trang cửa hàng'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -26,7 +26,7 @@ class HomeUserScreen extends StatelessWidget {
           )
         ],
       ),
-      body: const Center(child: Text("Chào mừng bạn, người dùng 👋")),
+      body: const Center(child: Text("Chào mừng cửa hàng 🏪")),
     );
   }
 }

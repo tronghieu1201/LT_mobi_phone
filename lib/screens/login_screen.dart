@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'register_screen.dart';
 import 'home_admin.dart';
 import 'home_user.dart';
-import 'register_screen.dart';
+import 'home_store.dart';
+import 'home_store1.dart';
+import 'home_store2.dart';
+import 'home_store3.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,39 +16,56 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final authService = AuthService();
+  final TextEditingController emailCtrl = TextEditingController();
+  final TextEditingController passCtrl = TextEditingController();
+  final AuthService _authService = AuthService();
+  bool loading = false;
 
-  Future<void> _login() async {
-    try {
-      final user = await authService.login(
-        emailController.text.trim(),
-        passwordController.text.trim(),
-      );
+  void _login() async {
+    setState(() => loading = true);
+    final role = await _authService.login(
+      email: emailCtrl.text.trim(),
+      password: passCtrl.text.trim(),
+    );
+    setState(() => loading = false);
 
-      if (user != null) {
-        final info = await authService.getUserInfo(user.uid);
-        final role = info?['role'];
-        final name = info?['name'] ?? 'User';
+    final email = emailCtrl.text.trim();
 
-        if (role == 'admin') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeAdminScreen()),
-          );
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => HomeUserScreen(userName: name),
-            ),
-          );
-        }
+    if (role == 'admin') {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const HomeAdminScreen()));
+    } 
+    else if (role == 'user') {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const HomeUserScreen()));
+    } 
+    else if (role == 'store') {
+      // ✅ Nhận biết cửa hàng theo email
+      if (email == 'store@gmail.com') {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
+      } 
+      else if (email == 'store1@gmail.com') {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const HomeStore1Screen()));
+      } 
+      else if (email == 'store2@gmail.com') {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const HomeStore2Screen()));
+      } 
+      else if (email == 'store3@gmail.com') {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
+      } 
+      else {
+        // Nếu là store nhưng không trùng các email trên
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
       }
-    } catch (e) {
+    } 
+    else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi đăng nhập: $e')),
+        const SnackBar(content: Text('Sai thông tin đăng nhập')),
       );
     }
   }
@@ -52,36 +73,33 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng nhập')),
+      appBar: AppBar(title: const Text("Đăng nhập")),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
-              controller: emailController,
+              controller: emailCtrl,
               decoration: const InputDecoration(labelText: 'Email'),
             ),
-            const SizedBox(height: 10),
             TextField(
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Mật khẩu'),
+              controller: passCtrl,
               obscureText: true,
+              decoration: const InputDecoration(labelText: 'Mật khẩu'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _login,
-              child: const Text('Đăng nhập'),
+              onPressed: loading ? null : _login,
+              child: loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Đăng nhập'),
             ),
-            const SizedBox(height: 10),
             TextButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                );
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()));
               },
-              child: const Text('Chưa có tài khoản? Đăng ký'),
+              child: const Text("Chưa có tài khoản? Đăng ký"),
             ),
           ],
         ),

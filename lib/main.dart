@@ -3,18 +3,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
+import 'screens/home_admin.dart';
+import 'screens/home_user.dart';
+import 'screens/home_store.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // Tạo admin mặc định nếu chưa có
-  final authService = AuthService();
-  await authService.ensureDefaultAdmin();
-
   runApp(const MyApp());
 }
 
@@ -24,9 +21,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Đồ án Firebase Login',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.orange),
+      title: 'Login Firebase',
+      theme: ThemeData(primarySwatch: Colors.deepPurple),
       home: const LoginScreen(),
     );
   }
