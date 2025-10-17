@@ -26,7 +26,9 @@ class HomeUserScreen extends StatelessWidget {
           )
         ],
       ),
-      body: const Center(child: Text("Chào mừng bạn, người dùng 👋")),
+      body: const Center(
+        child: Text("Chào mừng bạn, người dùng 👋"),
+      ),
     );
   }
 }

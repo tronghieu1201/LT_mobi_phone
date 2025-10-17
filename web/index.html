@@ -3,16 +3,7 @@
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
+    base path to your path prefix in the following line.
   -->
   <base href="$FLUTTER_BASE_HREF">
 
@@ -20,8 +11,9 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
 
-  <!-- iOS meta tags & icons -->
+  <!-- iOS meta tags & icons (fix deprecated: dùng mobile-web-app-capable) -->
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="doan_mobi">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -31,8 +23,55 @@
 
   <title>doan_mobi</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Google Maps JavaScript API cho web (fix: thêm loading=async để tối ưu) -->
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsIBGAXw7V4aWsro7bpuKRdT7jsDl6YpA&libraries=places&loading=async"></script>
+
+  <script>
+    // Viewport controls for mobile web
+    let view = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    let content = 'width=device-width, initial-scale=1.0';
+    if (navigator.platform === 'MacIntel') {
+      view = 'width=device-width, initial-scale=1.0';
+    }
+    let meta = document.querySelector('meta[name="viewport"]');
+    if (meta) {
+      meta.setAttribute('content', content);
+    } else {
+      let metaTag = document.createElement('meta');
+      metaTag.setAttribute('name', 'viewport');
+      metaTag.setAttribute('content', content);
+      let head = document.getElementsByTagName('head')[0];
+      head.appendChild(metaTag);
+    }
+    let appBackground = document.querySelector('#appBackground');
+    if (appBackground) {
+      appBackground.remove();
+    }
+  </script>
+
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Fix: Định nghĩa serviceWorkerVersion = null; để tránh ReferenceError
+    let serviceWorkerVersion = null;
+
+    // Load entrypoint
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>

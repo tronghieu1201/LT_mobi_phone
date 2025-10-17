@@ -1,0 +1,138 @@
+/* CSS để trang trí cho đẹp hơn */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f4f4f9;
+}
+
+/* Tạo kiểu cho nút bấm chính */
+.map-button {
+    padding: 12px 25px;
+    font-size: 18px;
+    color: white;
+    background-color: #4285F4; /* Màu xanh của Google */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 20px;
+}
+
+.map-button:hover {
+    background-color: #357ae8;
+}
+
+.map-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Vùng chứa tìm kiếm */
+.search-container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    margin-bottom: 20px;
+}
+
+.search-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Lựa chọn tìm kiếm */
+.search-option {
+    margin-bottom: 20px;
+}
+
+.search-option label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.search-option input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #34A853;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.search-button:hover {
+    background-color: #2d8e44;
+}
+
+.search-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.location-button {
+    padding: 12px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #EA4335;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.location-button:hover {
+    background-color: #d93025;
+}
+
+.location-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Vùng chứa bản đồ */
+.map-container {
+    width: 90%;
+    max-width: 800px;
+    height: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Thông báo lỗi */
+#error-message {
+    color: #d32f2f;
+    margin-top: 10px;
+    text-align: center;
+    display: none;
+}

@@ -5,8 +5,44 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-<<<<<<< HEAD
-  // Đăng ký tài khoản
+  // ✅ Init auth persistence (giữ session sau refresh)
+  Future<void> initAuth() async {
+    await _auth.setPersistence(Persistence.LOCAL);
+  }
+
+  // ✅ Chỉ đảm bảo admin tồn tại, KHÔNG tự động đăng nhập
+  Future<void> ensureDefaultAdmin() async {
+    const adminEmail = 'admin@gmail.com';
+    const adminPassword = '123456';
+
+    try {
+      final methods = await _auth.fetchSignInMethodsForEmail(adminEmail);
+
+      if (methods.isEmpty) {
+        // Tạo admin nếu chưa có
+        final userCred = await _auth.createUserWithEmailAndPassword(
+          email: adminEmail,
+          password: adminPassword,
+        );
+
+        await _firestore.collection('users').doc(userCred.user!.uid).set({
+          'email': adminEmail,
+          'role': 'admin',
+          'name': 'Admin',
+          'phone': '0000000000',
+          'enabled': true,
+        });
+        print('✅ Admin đã được tạo: $adminEmail');
+      } else {
+        print('✅ Admin đã tồn tại: $adminEmail');
+      }
+      // ✅ KHÔNG signIn tự động nữa, để user tự login
+    } catch (e) {
+      print('...');
+    }
+  }
+
+  // Đăng ký tài khoản (với role)
   Future<String?> register({
     required String email,
     required String password,
@@ -31,13 +67,42 @@ class AuthService {
         'enabled': true, // Mặc định enabled cho user mới
       });
 
+      print('✅ Người dùng mới đã được tạo: $email');
       return "success";
     } on FirebaseAuthException catch (e) {
+      print('❌ Lỗi đăng ký: ${e.message}');
       return e.message;
     }
   }
 
-  // Đăng nhập
+  // ✅ Đăng ký người dùng mới có thông tin (mặc định role = 'user')
+  Future<User?> registerWithInfo(
+      String name, String phone, String email, String password) async {
+    try {
+      final userCred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      String uid = userCred.user!.uid;
+
+      await _firestore.collection('users').doc(uid).set({
+        'email': email,
+        'name': name,
+        'phone': phone,
+        'role': 'user',
+        'enabled': true,
+      });
+
+      print('✅ Người dùng mới đã được tạo: $email');
+      return userCred.user;
+    } on FirebaseAuthException catch (e) {
+      print('❌ Lỗi đăng ký: ${e.message}');
+      return null;
+    }
+  }
+
+  // Đăng nhập (trả về role nếu thành công)
   Future<String?> login({
     required String email,
     required String password,
@@ -47,62 +112,9 @@ class AuthService {
         email: email,
         password: password,
       );
-=======
-  // ✅ Chỉ đảm bảo admin tồn tại, không in log thừa
-  Future<void> ensureDefaultAdmin() async {
-    const adminEmail = 'admin@gmail.com';
-    const adminPassword = '123456';
-
-    try {
-      final methods = await _auth.fetchSignInMethodsForEmail(adminEmail);
-
-      if (methods.isEmpty) {
-        // Tạo admin nếu chưa có
-        final userCred = await _auth.createUserWithEmailAndPassword(
-          email: adminEmail,
-          password: adminPassword,
-        );
-
-        await _firestore.collection('users').doc(userCred.user!.uid).set({
-          'email': adminEmail,
-          'role': 'admin',
-          'name': 'Admin',
-          'phone': '0000000000',
-        });
-      }
-
-      // ✅ Đăng nhập admin luôn sau khi kiểm tra
-      await _auth.signInWithEmailAndPassword(
-        email: adminEmail,
-        password: adminPassword,
-      );
-      print('Đăng nhập thành công: ');
-    } catch (e) {
-      // Nếu tài khoản đã tồn tại, chỉ đăng nhập lại mà không in lỗi
-      try {
-        await _auth.signInWithEmailAndPassword(
-          email: adminEmail,
-          password: adminPassword,
-        );
-        print('Đăng nhập thành công: ');
-      } catch (_) {
-        // Trường hợp duy nhất lỗi thật, không đăng nhập được
-      }
-    }
-  }
-
-  // ✅ Đăng ký người dùng mới có thông tin
-  Future<User?> registerWithInfo(
-      String name, String phone, String email, String password) async {
-    final userCred = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
->>>>>>> 80c036afa8b40c5ce851e56120c92df27f5a9b5a
 
       String uid = userCred.user!.uid;
 
-<<<<<<< HEAD
       // Kiểm tra trong users
       DocumentSnapshot userDoc =
           await _firestore.collection('users').doc(uid).get();
@@ -110,7 +122,12 @@ class AuthService {
         final userData = userDoc.data() as Map<String, dynamic>?;
         final isEnabled = userData?['enabled'] ?? true; // Mặc định true nếu không có field
         if (isEnabled != false) {
+          print('Đăng nhập thành công: $email (role: ${userData?['role']})');
           return userData?['role'];
+        } else {
+          await _auth.signOut(); // Đăng xuất nếu bị disable
+          print('❌ Tài khoản bị vô hiệu hóa: $email');
+          return null;
         }
       }
 
@@ -121,40 +138,46 @@ class AuthService {
         final storeData = storeDoc.data() as Map<String, dynamic>?;
         final isEnabled = storeData?['enabled'] ?? true; // Mặc định true nếu không có field
         if (isEnabled != false) {
+          print('Đăng nhập thành công: $email (role: ${storeData?['role']})');
           return storeData?['role'];
+        } else {
+          await _auth.signOut(); // Đăng xuất nếu bị disable
+          print('❌ Tài khoản bị vô hiệu hóa: $email');
+          return null;
         }
       }
 
+      print('❌ Không tìm thấy thông tin user/store cho: $email');
       return null;
     } on FirebaseAuthException catch (e) {
+      print('❌ Lỗi đăng nhập: ${e.message}');
       return e.message;
     }
   }
 
-  // Đăng xuất
-=======
-    print('✅ Người dùng mới đã được tạo: $email');
-    return userCred.user;
-  }
-
-  // ✅ Đăng nhập người dùng thường
-  Future<User?> login(String email, String password) async {
-    final userCred = await _auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    print('Đăng nhập thành công: $email');
-    return userCred.user;
-  }
-
   // ✅ Lấy thông tin người dùng (role, tên, ...)
   Future<Map<String, dynamic>?> getUserInfo(String uid) async {
-    final snap = await _firestore.collection('users').doc(uid).get();
-    return snap.data();
+    try {
+      // Kiểm tra users trước
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
+      if (userDoc.exists) {
+        return userDoc.data() as Map<String, dynamic>?;
+      }
+
+      // Nếu không, kiểm tra store
+      DocumentSnapshot storeDoc = await _firestore.collection('store').doc(uid).get();
+      if (storeDoc.exists) {
+        return storeDoc.data() as Map<String, dynamic>?;
+      }
+
+      return null;
+    } catch (e) {
+      print('❌ Lỗi lấy thông tin user: $e');
+      return null;
+    }
   }
 
-  // ✅ Đăng xuất
-
+  // Đăng xuất
   Future<void> logout() async {
     await _auth.signOut();
     print('👋 Đã đăng xuất');
@@ -206,16 +229,31 @@ class AuthService {
 
   // Disable user/store
   Future<void> disableAccount(String uid, String collection) async {
-    await _firestore.collection(collection).doc(uid).update({'enabled': false});
+    try {
+      await _firestore.collection(collection).doc(uid).update({'enabled': false});
+      print('✅ Đã vô hiệu hóa tài khoản: $uid');
+    } catch (e) {
+      print('❌ Lỗi vô hiệu hóa: $e');
+    }
   }
 
   // Enable user/store
   Future<void> enableAccount(String uid, String collection) async {
-    await _firestore.collection(collection).doc(uid).update({'enabled': true});
+    try {
+      await _firestore.collection(collection).doc(uid).update({'enabled': true});
+      print('✅ Đã kích hoạt tài khoản: $uid');
+    } catch (e) {
+      print('❌ Lỗi kích hoạt: $e');
+    }
   }
 
   // Delete account (chỉ xóa document, user Auth vẫn tồn tại nhưng không login được vì không có doc)
   Future<void> deleteAccount(String uid, String collection) async {
-    await _firestore.collection(collection).doc(uid).delete();
+    try {
+      await _firestore.collection(collection).doc(uid).delete();
+      print('✅ Đã xóa tài khoản: $uid');
+    } catch (e) {
+      print('❌ Lỗi xóa tài khoản: $e');
+    }
   }
 }

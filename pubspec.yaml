@@ -22,6 +22,15 @@ dependencies:
   # Format phone number, dates, currency, etc.
   intl: ^0.19.0
 
+  # Google Maps
+  google_maps_flutter: ^2.7.0
+
+  # Geolocator cho vị trí hiện tại
+  geolocator: ^10.1.0
+
+  # Geocoding cho tìm kiếm địa chỉ
+  geocoding: ^3.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

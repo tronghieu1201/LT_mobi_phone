@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm Kiếm Trên Google Maps</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <button id="toggleMapBtn" class="map-button">🗺️ Xem Map</button>
+
+    <div id="search-container" class="search-container" style="display: none;">
+        <h2>Tìm kiếm trên Google Maps</h2>
+        
+        <div class="search-option">
+            <label for="address-input">Nhập địa chỉ:</label>
+            <input type="text" id="address-input" placeholder="Ví dụ: Hoàn Kiếm, Hà Nội">
+            <button id="searchAddressBtn" class="search-button">Tìm kiếm</button>
+        </div>
+        
+        <div class="search-option">
+            <button id="currentLocationBtn" class="location-button">📍 Vị trí của bạn</button>
+        </div>
+    </div>
+
+    <div id="error-message"></div>
+
+    <div id="map-container" class="map-container" style="display: none;">
+        <iframe id="map-iframe" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
