@@ -17,6 +17,7 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.3  # Thêm để hỗ trợ upload ảnh lên Firebase (nếu cần ở view_user)
   provider: ^6.1.2
 
   # Format phone number, dates, currency, etc.
@@ -31,6 +32,10 @@ dependencies:
   # Geocoding cho tìm kiếm địa chỉ
   geocoding: ^3.0.0
 
+  # Image picker và path provider cho upload ảnh (dùng ở view_user, hỗ trợ web cơ bản)
+  image_picker: ^1.1.2  # Latest stable
+  path_provider: ^2.1.4  # Latest stable
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -39,10 +44,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # To add assets, uncomment the following lines and add your files:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # Assets cho hình ảnh QR và các file khác
+  assets:
+    - assets/img/
 
   # To add custom fonts, uncomment and configure:
   # fonts:

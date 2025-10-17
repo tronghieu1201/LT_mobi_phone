@@ -24,14 +24,14 @@
   <title>doan_mobi</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Google Maps JavaScript API cho web (fix: thêm loading=async để tối ưu) -->
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsIBGAXw7V4aWsro7bpuKRdT7jsDl6YpA&libraries=places&loading=async"></script>
+  <!-- Google Maps JavaScript API cho web (cập nhật: thêm libraries=places cho search quán ăn) -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsIBGAXw7V4aWsro7bpuKRdT7jsDl6YpA&libraries=places&loading=async"></script>
 
   <script>
-    // Viewport controls for mobile web
+    // Viewport controls for mobile web (cập nhật: tối ưu cho web + mobile)
     let view = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
     let content = 'width=device-width, initial-scale=1.0';
-    if (navigator.platform === 'MacIntel') {
+    if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) {
       view = 'width=device-width, initial-scale=1.0';
     }
     let meta = document.querySelector('meta[name="viewport"]');

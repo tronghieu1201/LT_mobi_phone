@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Thêm permission cho location (geolocator) -->
+    <!-- Permission cho location (geolocator) - cần cho tìm quán ăn gần đây -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Permission cho internet (load map) -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:label="doan_mobi"
@@ -35,7 +37,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Google Maps API Key (key mới) -->
+        <!-- Google Maps API Key (key cho native map trên Android) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBsIBGAXw7V4aWsro7bpuKRdT7jsDl6YpA" />
