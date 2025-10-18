@@ -14,6 +14,18 @@ class _ManageStoresScreenState extends State<ManageStoresScreen> {
   List<Map<String, dynamic>> _stores = [];
   bool _isLoading = true;
 
+  // --- Bảng màu Cờ Đỏ Sao Vàng ---
+  // Màu Đỏ cờ (màu nhấn chính)
+  static const Color vietnamRed = Color(0xFFDA251D);
+  // Màu Vàng sao (màu nhấn phụ)
+  static const Color vietnamYellow = Color(0xFFFFC107); // (Màu Amber 500-600)
+  // Màu chữ chính (trên nền trắng)
+  static Color darkTextColor = Colors.black87;
+  // Màu chữ phụ (trên nền đỏ)
+  static Color lightTextColor = Colors.white;
+  // Màu nền chính
+  static Color backgroundColor = Colors.grey[50]!; // Nền hơi xám 1 chút cho dịu mắt
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +44,10 @@ class _ManageStoresScreenState extends State<ManageStoresScreen> {
     await _auth.disableAccount(uid, 'store');
     _fetchStores(); // Refresh list
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đã vô hiệu hóa cửa hàng')),
+      SnackBar(
+        content: const Text('Đã vô hiệu hóa cửa hàng'),
+        backgroundColor: vietnamRed,
+      ),
     );
   }
 
@@ -40,7 +55,10 @@ class _ManageStoresScreenState extends State<ManageStoresScreen> {
     await _auth.enableAccount(uid, 'store');
     _fetchStores(); // Refresh list
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đã kích hoạt cửa hàng')),
+      SnackBar(
+        content: const Text('Đã kích hoạt cửa hàng'),
+        backgroundColor: vietnamRed,
+      ),
     );
   }
 
@@ -48,7 +66,7 @@ class _ManageStoresScreenState extends State<ManageStoresScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
+        title: Text('Xác nhận xóa', style: TextStyle(color: vietnamRed, fontWeight: FontWeight.bold)),
         content: Text('Bạn có chắc muốn xóa cửa hàng $email? Tài khoản sẽ mất hẳn và phải tạo lại.'),
         actions: [
           TextButton(
@@ -67,7 +85,10 @@ class _ManageStoresScreenState extends State<ManageStoresScreen> {
       await _auth.deleteAccount(uid, 'store');
       _fetchStores(); // Refresh list
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã xóa cửa hàng')),
+        SnackBar(
+          content: const Text('Đã xóa cửa hàng'),
+          backgroundColor: vietnamRed,
+        ),
       );
     }
   }
@@ -75,55 +96,194 @@ class _ManageStoresScreenState extends State<ManageStoresScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor, // Nền xám rất nhạt
       appBar: AppBar(
-        title: const Text('Quản lý cửa hàng'),
+        title: Text(
+          "",
+          style: TextStyle(
+            color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.transparent, // Nền AppBar trong suốt
+        elevation: 0,
+        iconTheme: IconThemeData(color: vietnamRed), // Icon màu đỏ
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFFDA251D)),
           onPressed: () => Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const HomeAdminScreen()),
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _stores.isEmpty
-              ? const Center(child: Text('Không có cửa hàng nào'))
-              : ListView.builder(
-                  itemCount: _stores.length,
-                  itemBuilder: (context, index) {
-                    final store = _stores[index];
-                    final isEnabled = store['enabled'] != false;
-                    return Card(
-                      margin: const EdgeInsets.all(8.0),
-                      child: ListTile(
-                        title: Text(store['name'] ?? 'N/A'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Email: ${store['email']}'),
-                            Text('SĐT: ${store['phone']}'),
-                            Text('Trạng thái: ${isEnabled ? 'Kích hoạt' : 'Vô hiệu hóa'}'),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(isEnabled ? Icons.block : Icons.check_circle),
-                              onPressed: () => isEnabled ? _disableStore(store['uid']) : _enableStore(store['uid']),
-                              color: isEnabled ? Colors.orange : Colors.green,
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteStore(store['uid'], store['email']),
-                            ),
-                          ],
-                        ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Xin chào với icon cờ Việt Nam (căn giữa)
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Quản lý Cửa Hàng",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Image.asset(
+                      'assets/img/VietNam.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: _isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: vietnamRed,
                       ),
-                    );
-                  },
-                ),
+                    )
+                  : _stores.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Không có cửa hàng nào',
+                            style: TextStyle(
+                              color: darkTextColor,
+                              fontSize: 16,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _stores.length,
+                          itemBuilder: (context, index) {
+                            final store = _stores[index];
+                            final isEnabled = store['enabled'] != false;
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              color: Colors.white,
+                              shadowColor: Colors.black.withOpacity(0.1),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            store['name'] ?? 'N/A',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: darkTextColor,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Email: ${store['email']}',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                          Text(
+                                            'SĐT: ${store['phone']}',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                          Text(
+                                            'Trạng thái: ${isEnabled ? 'Kích hoạt' : 'Vô hiệu hóa'}',
+                                            style: TextStyle(
+                                              color: isEnabled ? Colors.green : Colors.orange,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Column(
+                                      children: [
+                                        SizedBox(
+                                          width: 120,
+                                          height: 40,
+                                          child: ElevatedButton.icon(
+                                            onPressed: () => isEnabled
+                                                ? _disableStore(store['uid'])
+                                                : _enableStore(store['uid']),
+                                            icon: Icon(
+                                              isEnabled ? Icons.block : Icons.check_circle,
+                                              size: 18,
+                                              color: lightTextColor,
+                                            ),
+                                            label: Text(
+                                              isEnabled ? 'Vô hiệu hóa' : 'Kích hoạt',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: lightTextColor,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: isEnabled ? Colors.orange : Colors.green,
+                                              foregroundColor: lightTextColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        SizedBox(
+                                          width: 120,
+                                          height: 40,
+                                          child: ElevatedButton.icon(
+                                            onPressed: () => _deleteStore(store['uid'], store['email']),
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              size: 18,
+                                              color: Color(0xFFFFFFFF),
+                                            ),
+                                            label: const Text(
+                                              'Xóa',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFFFFFFFF),
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: vietnamRed,
+                                              foregroundColor: lightTextColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
