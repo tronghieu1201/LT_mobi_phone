@@ -125,15 +125,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-            const Text(
-              "Tham gia Doan Mobi ngay!",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+            // Xin chào với icon cờ Việt Nam (căn giữa)
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Hố Hố",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Image.asset(
+                      'assets/img/VietNam.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              "Tạo tài khoản để bắt đầu hành trình giao hàng",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
+          
             const SizedBox(height: 30),
             // Form trong Card
             Card(
@@ -181,20 +195,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                       ),
                     ),
-                    const SizedBox(height: 15),
-                    DropdownButtonFormField<String>(
-                      value: role,
-                      decoration: const InputDecoration(
-                        labelText: 'Loại tài khoản',
-                        prefixIcon: Icon(Icons.account_circle_outlined, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'user', child: Text('Người dùng')),
-                        DropdownMenuItem(value: 'store', child: Text('Cửa hàng')),
-                      ],
-                      onChanged: (val) => setState(() => role = val!),
-                    ),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -202,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: ElevatedButton(
                         onPressed: loading ? null : _register,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[600], // Xanh cho register
+                          backgroundColor: Colors.blue[600],
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 3,
                         ),

@@ -197,15 +197,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            const Text(
-              "Chào mừng quay lại Doan Mobi!",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+            // Xin chào quý khách với icon cờ Việt Nam (căn giữa)
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Xin chào quý khách",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Image.asset(
+                      'assets/img/VietNam.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              "Đăng nhập để tiếp tục giao hàng nhanh chóng",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
+          
             const SizedBox(height: 30),
             // Form trong Card
             Card(
@@ -263,8 +277,15 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
               },
-              icon: const Icon(Icons.person_add, color: Colors.blue),
-              label: const Text("Chưa có tài khoản? Đăng ký"),
+              icon: SizedBox(
+                width: 20,
+                height: 20,
+                child: Image.asset(
+                  'assets/img/VietNam.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+              label: const Text("Đăng ký"),
             ),
           ],
         ),

@@ -235,106 +235,126 @@ class _ViewUserState extends State<ViewUser> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hồ sơ'),
-        // Không có actions logout ở đây, để ở dưới
+    final theme = Theme.of(context).copyWith(
+      primaryColor: const Color(0xFF81D4FA), // Xanh nhạt da trời (Blue 200)
+      scaffoldBackgroundColor: const Color(0xFFE3F2FD),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF81D4FA), // Xanh nhạt da trời
+        foregroundColor: Colors.black87, // Text tối hơn để tương phản tốt
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  // Phần 1: Thông tin cá nhân hiển thị cứng với button cập nhật
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          // Avatar: Logo nhỏ (60px)
-                          const CircleAvatar(
-                            radius: 30, // Nhỏ thôi
-                            backgroundColor: Colors.blue,
-                            child: CircleAvatar(
-                              radius: 28,
-                              backgroundImage: AssetImage('assets/img/logo.png'),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF81D4FA), // Xanh nhạt da trời
+          foregroundColor: Colors.black87, // Text tối hơn
+        ),
+      ),
+    );
+
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Hồ sơ'),
+          // Không có actions logout ở đây, để ở dưới
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    // Phần 1: Thông tin cá nhân hiển thị cứng với button cập nhật
+                    Card(
+                      elevation: 4,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            // Avatar: Logo nhỏ (60px)
+                            CircleAvatar(
+                              radius: 30, // Nhỏ thôi
+                              backgroundColor: const Color(0xFF81D4FA), // Xanh nhạt da trời
+                              child: const CircleAvatar(
+                                radius: 28,
+                                backgroundImage: AssetImage('assets/img/logo.png'),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Thông tin cá nhân',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          // Hiển thị tên cứng
-                          ListTile(
-                            leading: const Icon(Icons.person_outline),
-                            title: const Text('Tên'),
-                            subtitle: Text(_userInfo?['name'] ?? 'Chưa có thông tin'),
-                          ),
-                          // Hiển thị số điện thoại cứng
-                          ListTile(
-                            leading: const Icon(Icons.phone_outlined),
-                            title: const Text('Số điện thoại'),
-                            subtitle: Text(_userInfo?['phone'] ?? 'Chưa có thông tin'),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _showUpdateInfoDialog,
-                              child: const Text('Cập nhật thông tin'),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Thông tin cá nhân',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            // Hiển thị tên cứng
+                            ListTile(
+                              leading: const Icon(Icons.person_outline, color: Color(0xFF81D4FA)), // Xanh nhạt da trời
+                              title: const Text('Tên', style: TextStyle(color: Color(0xFF81D4FA))), // Xanh nhạt da trời
+                              subtitle: Text(_userInfo?['name'] ?? 'Chưa có thông tin'),
+                            ),
+                            // Hiển thị số điện thoại cứng
+                            ListTile(
+                              leading: const Icon(Icons.phone_outlined, color: Color(0xFF81D4FA)), // Xanh nhạt da trời
+                              title: const Text('Số điện thoại', style: TextStyle(color: Color(0xFF81D4FA))), // Xanh nhạt da trời
+                              subtitle: Text(_userInfo?['phone'] ?? 'Chưa có thông tin'),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _showUpdateInfoDialog,
+                                child: const Text('Cập nhật thông tin'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Phần 2: Hoạt động (thay đổi từ Tính năng nâng cao)
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Hoạt động',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: null, // Vô hiệu hóa hiện tại
-                              child: const Text('Cài đặt nâng cao'),
+                    const SizedBox(height: 24),
+                    // Phần 2: Hoạt động (thay đổi từ Tính năng nâng cao)
+                    Card(
+                      elevation: 4,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Hoạt động',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: null, // Vô hiệu hóa hiện tại
+                                child: const Text('Cài đặt nâng cao'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Phần 3: Button đăng xuất ở dưới
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _handleLogout(context),
-                      icon: const Icon(Icons.logout),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[400],
-                        foregroundColor: Colors.white,
+                    const SizedBox(height: 24),
+                    // Phần 3: Button đăng xuất ở dưới
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _handleLogout(context),
+                        icon: const Icon(Icons.logout),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red[400],
+                          foregroundColor: Colors.white,
+                        ),
+                        label: const Text('Đăng xuất'),
                       ),
-                      label: const Text('Đăng xuất'),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

@@ -7,6 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'view/view_search.dart';
+import 'view/view_food.dart';
+import 'view/view_drink.dart';
 import 'view/view_user.dart';
 import 'dart:async'; // Cho Timer auto-scroll
 
@@ -127,6 +129,14 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
         );
       },
     );
+  }
+
+  void _showDevelopingSnackBar() {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tính năng đang phát triển')),
+      );
+    }
   }
 
   @override
@@ -294,14 +304,14 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Theme màu mệnh Thủy
+    // Theme màu mệnh Thủy - xanh nhạt da trời
     final theme = Theme.of(context).copyWith(
-      primaryColor: const Color(0xFF1976D2),
+      primaryColor: const Color(0xFF81D4FA),
       scaffoldBackgroundColor: const Color(0xFFE3F2FD),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: Color(0xFF1976D2)),
+        iconTheme: IconThemeData(color: Color(0xFF81D4FA)),
       ),
     );
 
@@ -315,62 +325,78 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
             children: [
               // Top row: QR và tìm kiếm ở trên, hồ sơ nhỏ hơn (size 16)
               Padding(
-  padding: const EdgeInsets.fromLTRB(12, 40, 12, 16),
-  child: Row(
-    children: [
-      // Nút QR nhỏ gọn
-      SizedBox(
-        width: 40,
-        height: 40,
-        child: IconButton(
-          onPressed: () => _showQRDialog(context),
-          icon: const Icon(Icons.qr_code_scanner, size: 24, color: Color(0xFF1976D2)),
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            padding: EdgeInsets.zero,
-            elevation: 1,
-          ),
-        ),
-      ),
-      const SizedBox(width: 8),
-      // Ô tìm kiếm chiếm giữa
-      Expanded(
-        child: TextField(
-          decoration: InputDecoration(
-            hintText: 'Tìm kiếm...',
-            prefixIcon: const Icon(Icons.search, color: Color(0xFF42A5F5), size: 20),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-        ),
-      ),
-      const SizedBox(width: 8),
-      // Nút hồ sơ nhỏ gọn
-      SizedBox(
-        width: 40,
-        height: 40,
-        child: IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ViewUser()),
-            );
-          },
-          icon: const Icon(Icons.person, size: 22, color: Color(0xFF1976D2)),
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            padding: EdgeInsets.zero,
-            elevation: 1,
-          ),
-        ),
-      ),
-    ],
-  ),
-),
+                padding: const EdgeInsets.fromLTRB(12, 40, 12, 16),
+                child: Row(
+                  children: [
+                    // Nút QR nhỏ gọn
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: IconButton(
+                        onPressed: () => _showQRDialog(context),
+                        icon: const Icon(Icons.qr_code_scanner, size: 24, color: Color(0xFF81D4FA)),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: EdgeInsets.zero,
+                          elevation: 1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Ô tìm kiếm chiếm giữa - button thay thế TextField
+                    Expanded(
+                      child: SizedBox(
+                        height: 40,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ViewSearch(currentPosition: _currentPosition),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.search, color: Color(0xFF81D4FA), size: 20),
+                          label: const Text(
+                            'Tìm kiếm...',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Nút hồ sơ nhỏ gọn
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ViewUser()),
+                          );
+                        },
+                        icon: const Icon(Icons.person, size: 22, color: Color(0xFF81D4FA)),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: EdgeInsets.zero,
+                          elevation: 1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               // Bản đồ
               if (kIsWeb)
@@ -392,7 +418,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: _mapEmbedUrl.isEmpty
-                          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1976D2)))
+                          ? const Center(child: CircularProgressIndicator(color: Color(0xFF81D4FA)))
                           : const HtmlElementView(viewType: 'small-google-maps-iframe'),
                     ),
                   ),
@@ -407,7 +433,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                       color: const Color(0xFFE3F2FD),
                     ),
                     child: const Center(
-                      child: Text('Bản đồ chỉ hỗ trợ trên web', style: TextStyle(color: Color(0xFF1976D2))),
+                      child: Text('Bản đồ chỉ hỗ trợ trên web', style: TextStyle(color: Color(0xFF81D4FA))),
                     ),
                   ),
                 ),
@@ -420,14 +446,64 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                   runSpacing: 8.0,
                   alignment: WrapAlignment.center,
                   children: [
-                    _buildCategoryButton('Đồ ăn', Icons.restaurant, const Color(0xFF2196F3)),
-                    _buildCategoryButton('Đi chợ', Icons.shopping_cart, const Color(0xFF42A5F5)),
-                    _buildCategoryButton('Đồ uống', Icons.local_drink, const Color(0xFF64B5F6)),
-                    _buildCategoryButton('Giao hàng', Icons.delivery_dining, const Color(0xFF90CAF9)),
-                    _buildCategoryButton('Tin nhắn', Icons.message, const Color(0xFFB3E5FC)),
-                    _buildCategoryButton('Tính cách của bạn', Icons.psychology, const Color(0xFFE1F5FE)),
-                    _buildCategoryButton('Ưu ái', Icons.favorite, const Color(0xFF1976D2)),
-                    _buildCategoryButton('Mua nợ', Icons.payment, const Color(0xFF2196F3)),
+                    _buildCategoryButton(
+                      'Đồ ăn',
+                      Icons.restaurant,
+                      const Color(0xFF81D4FA),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewFood(currentPosition: _currentPosition),
+                        ),
+                      ),
+                    ),
+                    _buildCategoryButton(
+                      'Đi chợ',
+                      Icons.shopping_cart,
+                      const Color(0xFF81D4FA),
+                      _showDevelopingSnackBar,
+                    ),
+                    _buildCategoryButton(
+                      'Đồ uống',
+                      Icons.local_drink,
+                      const Color(0xFF81D4FA),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewDrink(currentPosition: _currentPosition),
+                        ),
+                      ),
+                    ),
+                    _buildCategoryButton(
+                      'Giao hàng',
+                      Icons.delivery_dining,
+                      const Color(0xFF81D4FA),
+                      _showDevelopingSnackBar,
+                    ),
+                    _buildCategoryButton(
+                      'Tin nhắn',
+                      Icons.message,
+                      const Color(0xFF81D4FA),
+                      _showDevelopingSnackBar,
+                    ),
+                    _buildCategoryButton(
+                      'Tính cách của bạn',
+                      Icons.psychology,
+                      const Color(0xFF81D4FA),
+                      _showDevelopingSnackBar,
+                    ),
+                    _buildCategoryButton(
+                      'Ưu ái',
+                      Icons.favorite,
+                      const Color(0xFF81D4FA),
+                      _showDevelopingSnackBar,
+                    ),
+                    _buildCategoryButton(
+                      'Mua nợ',
+                      Icons.payment,
+                      const Color(0xFF81D4FA),
+                      _showDevelopingSnackBar,
+                    ),
                   ],
                 ),
               ),
@@ -438,7 +514,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Khuyến mãi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
+                    const Text('Khuyến mãi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF81D4FA))),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 150,
@@ -465,7 +541,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         width: _currentVoucherIndex == index ? 8 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: _currentVoucherIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          color: _currentVoucherIndex == index ? const Color(0xFF81D4FA) : Colors.grey,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       )),
@@ -480,10 +556,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Combo gợi ý', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
+                    const Text('Combo gợi ý', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF81D4FA))),
                     const SizedBox(height: 16),
                     // Buổi sáng
-                    const Text('Buổi sáng', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF42A5F5))),
+                    const Text('Buổi sáng', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF81D4FA))),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 150,
@@ -509,14 +585,14 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         width: _currentMorningIndex == index ? 8 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: _currentMorningIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          color: _currentMorningIndex == index ? const Color(0xFF81D4FA) : Colors.grey,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       )),
                     ),
                     const SizedBox(height: 16),
                     // Buổi trưa
-                    const Text('Buổi trưa', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF42A5F5))),
+                    const Text('Buổi trưa', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF81D4FA))),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 150,
@@ -542,14 +618,14 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         width: _currentAfternoonIndex == index ? 8 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: _currentAfternoonIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          color: _currentAfternoonIndex == index ? const Color(0xFF81D4FA) : Colors.grey,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       )),
                     ),
                     const SizedBox(height: 16),
                     // Buổi tối
-                    const Text('Buổi tối', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF42A5F5))),
+                    const Text('Buổi tối', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF81D4FA))),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 150,
@@ -575,7 +651,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         width: _currentEveningIndex == index ? 8 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: _currentEveningIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          color: _currentEveningIndex == index ? const Color(0xFF81D4FA) : Colors.grey,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       )),
@@ -592,8 +668,8 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
           onPressed: () {
             _showChatBotDialog(context);
           },
-          backgroundColor: const Color(0xFF42A5F5),
-          child: const Icon(Icons.chat_bubble, color: Colors.white),
+          backgroundColor: const Color(0xFF81D4FA),
+          child: const Icon(Icons.chat_bubble, color: Colors.black87),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
@@ -634,27 +710,31 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
   }
 
   // Helper build category button (bỏ "Tâm sự" ra khỏi Wrap)
-  Widget _buildCategoryButton(String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFE3F2FD),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: color, fontSize: 12)),
-        ],
+  Widget _buildCategoryButton(String label, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFE3F2FD),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(color: color, fontSize: 12)),
+          ],
+        ),
       ),
     );
   }
