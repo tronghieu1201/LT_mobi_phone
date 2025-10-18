@@ -23,6 +23,18 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   bool loading = false;
 
+  // --- Bảng màu Cờ Đỏ Sao Vàng ---
+  // Màu Đỏ cờ (màu nhấn chính)
+  static const Color vietnamRed = Color(0xFFDA251D);
+  // Màu Vàng sao (màu nhấn phụ)
+  static const Color vietnamYellow = Color(0xFFFFC107); // (Màu Amber 500-600)
+  // Màu chữ chính (trên nền trắng)
+  static Color darkTextColor = Colors.black87;
+  // Màu chữ phụ (trên nền đỏ)
+  static Color lightTextColor = Colors.white;
+  // Màu nền chính
+  static Color backgroundColor = Colors.grey[50]!; // Nền hơi xám 1 chút cho dịu mắt
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateBasedOnRole() async {
+    // ... (Toàn bộ logic này giữ nguyên) ...
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final role = await _getRoleFromUid(user.uid);
@@ -51,17 +64,17 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (role == 'store') {
         if (mounted) {
           if (email == 'store1@gmail.com') {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (_) => const HomeStore1Screen()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (_) => const HomeStore1Screen()));
           } else if (email == 'store2@gmail.com') {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (_) => const HomeStore2Screen()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (_) => const HomeStore2Screen()));
           } else if (email == 'store3@gmail.com') {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
           } else {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
           }
         }
       }
@@ -69,6 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<String?> _getRoleFromUid(String uid) async {
+    // ... (Toàn bộ logic này giữ nguyên) ...
     DocumentSnapshot userDoc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (userDoc.exists) {
@@ -93,10 +107,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() async {
+    // ... (Toàn bộ logic này giữ nguyên, chỉ đổi màu SnackBar) ...
     if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
+          SnackBar(
+            content: const Text('Vui lòng nhập đầy đủ thông tin'),
+            backgroundColor: Colors.red[600], // Màu đỏ cảnh báo
+          ),
         );
       }
       return;
@@ -117,41 +135,48 @@ class _LoginScreenState extends State<LoginScreen> {
       if (role != null && role != 'null') {
         if (mounted) {
           if (role == 'admin') {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (_) => const HomeAdminScreen()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (_) => const HomeAdminScreen()));
           } else if (role == 'user') {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (_) => const HomeUserScreen()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (_) => const HomeUserScreen()));
           } else if (role == 'store') {
             if (email == 'store@gmail.com') {
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
             } else if (email == 'store1@gmail.com') {
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => const HomeStore1Screen()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (_) => const HomeStore1Screen()));
             } else if (email == 'store2@gmail.com') {
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => const HomeStore2Screen()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (_) => const HomeStore2Screen()));
             } else if (email == 'store3@gmail.com') {
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
             } else {
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
             }
           }
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Sai thông tin đăng nhập hoặc tài khoản bị vô hiệu hóa')),
+            SnackBar(
+              content:
+                  const Text('Sai thông tin đăng nhập hoặc tài khoản bị vô hiệu hóa'),
+              backgroundColor: Colors.red[600],
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${e.toString()}')),
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: Colors.red[600],
+          ),
         );
       }
     } finally {
@@ -164,11 +189,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Nền nhạt cho mobile
+      backgroundColor: backgroundColor, // Nền xám rất nhạt
       appBar: AppBar(
-        title: const Text("Đăng nhập", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blue[600],
+        title: const Text(""),
+        backgroundColor: Colors.transparent, // Nền AppBar trong suốt
         elevation: 0,
+        iconTheme: IconThemeData(color: vietnamRed), // Nút back (nếu có) màu đỏ
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -183,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withOpacity(0.1), // Bóng đen mờ
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -202,9 +228,13 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     "Xin chào quý khách",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+                    ),
                   ),
                   const SizedBox(width: 8),
                   SizedBox(
@@ -218,13 +248,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-          
             const SizedBox(height: 30),
+
             // Form trong Card
             Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              color: Colors.white, // Card nền trắng tinh
+              shadowColor: Colors.black.withOpacity(0.1),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -232,40 +264,76 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextField(
                       controller: emailCtrl,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: darkTextColor), // Chữ đen
+                      decoration: InputDecoration(
                         labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        prefixIcon: const Icon(Icons.email_outlined,
+                            color: vietnamYellow), // Icon màu VÀNG
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: vietnamRed, width: 2.0), // Viền focus màu ĐỎ
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 15),
                     TextField(
                       controller: passCtrl,
                       obscureText: true,
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: darkTextColor), // Chữ đen
+                      decoration: InputDecoration(
                         labelText: 'Mật khẩu',
-                        prefixIcon: Icon(Icons.lock_outline, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: vietnamYellow), // Icon màu VÀNG
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: vietnamRed, width: 2.0), // Viền focus màu ĐỎ
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 25),
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
                         onPressed: loading ? null : _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[600],
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          backgroundColor: vietnamRed, // Nút màu ĐỎ cờ
+                          foregroundColor: lightTextColor, // Chữ TRẮNG
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                           elevation: 3,
                         ),
                         child: loading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                    color: lightTextColor,
+                                    strokeWidth: 2), // Loading TRẮNG
                               )
-                            : const Text('Đăng nhập', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            : Text('Đăng nhập',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: lightTextColor)), // Chữ TRẮNG
                       ),
                     ),
                   ],
@@ -275,7 +343,8 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             TextButton.icon(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()));
               },
               icon: SizedBox(
                 width: 20,
@@ -285,7 +354,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   fit: BoxFit.contain,
                 ),
               ),
-              label: const Text("Đăng ký"),
+              label: Text("Chưa có tài khoản? Đăng ký",
+                  style: TextStyle(color: vietnamRed)), // Chữ màu ĐỎ cờ
+              style: TextButton.styleFrom(
+                  foregroundColor: vietnamRed), // Màu chữ khi nhấn
             ),
           ],
         ),
