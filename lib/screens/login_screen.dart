@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/auth_service.dart';
 import 'register_screen.dart';
 import 'home_admin.dart';
@@ -26,9 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ Check nếu đã login, không cho vào login
     if (FirebaseAuth.instance.currentUser != null) {
-      // App sẽ handle ở AuthWrapper, nhưng nếu vào đây thì redirect
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigateBasedOnRole();
       });
@@ -41,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final role = await _getRoleFromUid(user.uid);
       final email = user.email ?? '';
       if (role == 'admin') {
-        if (mounted) {  // ✅ Thêm mounted check để tránh dispose error
+        if (mounted) {
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (_) => const HomeAdminScreen()));
         }
@@ -71,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<String?> _getRoleFromUid(String uid) async {
-    // Tương tự helper ở main.dart
     DocumentSnapshot userDoc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (userDoc.exists) {
@@ -97,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty) {
-      if (mounted) {  // ✅ Thêm mounted cho snackbar
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
         );
@@ -117,8 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final email = emailCtrl.text.trim();
 
-      if (role != null && role != 'null') {  // ✅ Check role hợp lệ
-        if (mounted) {  // ✅ Mounted trước navigate
+      if (role != null && role != 'null') {
+        if (mounted) {
           if (role == 'admin') {
             Navigator.pushReplacement(
                 context, MaterialPageRoute(builder: (_) => const HomeAdminScreen()));
@@ -126,7 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pushReplacement(
                 context, MaterialPageRoute(builder: (_) => const HomeUserScreen()));
           } else if (role == 'store') {
-            // ✅ Nhận biết cửa hàng theo email
             if (email == 'store@gmail.com') {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
@@ -140,7 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
             } else {
-              // Nếu là store nhưng không trùng các email trên
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
             }
@@ -154,14 +149,13 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
     } catch (e) {
-      // ✅ Log lỗi nếu cần: print('Login error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi: ${e.toString()}')),
         );
       }
     } finally {
-      if (mounted) {  // ✅ Mounted ở finally để tránh dispose error
+      if (mounted) {
         setState(() => loading = false);
       }
     }
@@ -170,37 +164,118 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Đăng nhập")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      backgroundColor: const Color(0xFFF5F7FA), // Nền nhạt cho mobile
+      appBar: AppBar(
+        title: const Text("Đăng nhập", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blue[600],
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            TextField(
-              controller: emailCtrl,
-              decoration: const InputDecoration(labelText: 'Email'),
+            // Hình ảnh đại diện khi vào app
+            Container(
+              height: 200,
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 30),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.asset(
+                  'assets/img/1.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-            TextField(
-              controller: passCtrl,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Mật khẩu'),
+            const Text(
+              "Chào mừng quay lại Doan Mobi!",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Đăng nhập để tiếp tục giao hàng nhanh chóng",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 30),
+            // Form trong Card
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined, color: Colors.blue),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: passCtrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Mật khẩu',
+                        prefixIcon: Icon(Icons.lock_outline, color: Colors.blue),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: loading ? null : _login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[600],
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 3,
+                        ),
+                        child: loading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('Đăng nhập', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: loading ? null : _login,
-              child: loading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Đăng nhập'),
-            ),
-            TextButton(
+            TextButton.icon(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const RegisterScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
               },
-              child: const Text("Chưa có tài khoản? Đăng ký"),
+              icon: const Icon(Icons.person_add, color: Colors.blue),
+              label: const Text("Chưa có tài khoản? Đăng ký"),
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    emailCtrl.dispose();
+    passCtrl.dispose();
+    super.dispose();
   }
 }

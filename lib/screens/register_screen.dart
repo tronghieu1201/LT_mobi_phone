@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // Import để handle FirebaseAuthException
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -92,35 +92,134 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Đăng ký tài khoản")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Tên')),
-              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Số điện thoại')),
-              TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
-              TextField(controller: passCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'Mật khẩu')),
-              const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: role,
-                decoration: const InputDecoration(labelText: 'Loại tài khoản'),
-                items: const [
-                  DropdownMenuItem(value: 'user', child: Text('Người dùng')),
-                  DropdownMenuItem(value: 'store', child: Text('Cửa hàng')),
+      backgroundColor: const Color(0xFFF5F7FA), // Nền nhạt
+      appBar: AppBar(
+        title: const Text("Đăng ký tài khoản", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blue[600],
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            // Hình ảnh đại diện
+            Container(
+              height: 200,
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 30),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
                 ],
-                onChanged: (val) => setState(() => role = val!),
               ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: loading ? null : _register,
-                child: loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Đăng ký"),
-              )
-            ],
-          ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.asset(
+                  'assets/img/1.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const Text(
+              "Tham gia Doan Mobi ngay!",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Tạo tài khoản để bắt đầu hành trình giao hàng",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 30),
+            // Form trong Card
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: nameCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Tên',
+                        prefixIcon: Icon(Icons.person_outline, color: Colors.blue),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: phoneCtrl,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: 'Số điện thoại',
+                        prefixIcon: Icon(Icons.phone_outlined, color: Colors.blue),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined, color: Colors.blue),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: passCtrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Mật khẩu',
+                        prefixIcon: Icon(Icons.lock_outline, color: Colors.blue),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    DropdownButtonFormField<String>(
+                      value: role,
+                      decoration: const InputDecoration(
+                        labelText: 'Loại tài khoản',
+                        prefixIcon: Icon(Icons.account_circle_outlined, color: Colors.blue),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'user', child: Text('Người dùng')),
+                        DropdownMenuItem(value: 'store', child: Text('Cửa hàng')),
+                      ],
+                      onChanged: (val) => setState(() => role = val!),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: loading ? null : _register,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[600], // Xanh cho register
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 3,
+                        ),
+                        child: loading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text("Đăng ký", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

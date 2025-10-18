@@ -3,23 +3,72 @@ import 'package:flutter/material.dart';
 import 'dart:ui_web' as ui;
 import 'dart:html' as html;
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart'; // Thêm import này để có LatLng
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'view/view_search.dart';
 import 'view/view_user.dart';
+import 'dart:async'; // Cho Timer auto-scroll
 
 class HomeUserScreen extends StatefulWidget {
-  const HomeUserScreen({super.key});
+  const HomeUserScreen({Key? key}) : super(key: key);
 
   @override
   State<HomeUserScreen> createState() => _HomeUserScreenState();
 }
 
 class _HomeUserScreenState extends State<HomeUserScreen> {
-  String _mapEmbedUrl = ''; // URL dynamic sẽ update với vị trí user
-  static const LatLng _defaultPosition = LatLng(21.0278, 105.8342); // Fallback Hồ Gươm
+  String _mapEmbedUrl = '';
+  static const LatLng _defaultPosition = LatLng(21.0278, 105.8342);
   LatLng? _currentPosition;
+
+  // Auto-scroll cho vouchers
+  final List<String> _voucherImages = [
+    'assets/img/voucher1.png',
+    'assets/img/voucher2.jpg',
+    'assets/img/voucher3.jpg',
+    'assets/img/voucher4.jpg',
+    'assets/img/voucher5.jpg',
+  ];
+  final PageController _voucherController = PageController();
+  int _currentVoucherIndex = 0;
+  Timer? _voucherTimer;
+
+  // Auto-scroll cho buổi sáng
+  final List<String> _morningImages = [
+    'assets/img/sang1.jpg',
+    'assets/img/sang2.jpg',
+    'assets/img/sang3.jpg',
+    'assets/img/sang4.jpg',
+    'assets/img/sang5.jpg',
+  ];
+  final PageController _morningController = PageController();
+  int _currentMorningIndex = 0;
+  Timer? _morningTimer;
+
+  // Auto-scroll cho buổi trưa
+  final List<String> _afternoonImages = [
+    'assets/img/trua1.jpg',
+    'assets/img/trua2.jpg',
+    'assets/img/trua3.jpg',
+    'assets/img/trua4.jpg',
+    'assets/img/trua5.jpg',
+  ];
+  final PageController _afternoonController = PageController();
+  int _currentAfternoonIndex = 0;
+  Timer? _afternoonTimer;
+
+  // Auto-scroll cho buổi tối
+  final List<String> _eveningImages = [
+    'assets/img/toi1.jpg',
+    'assets/img/toi2.jpg',
+    'assets/img/toi3.jpg',
+    'assets/img/toi4.jpg',
+    'assets/img/toi5.jpg',
+  ];
+  final PageController _eveningController = PageController();
+  int _currentEveningIndex = 0;
+  Timer? _eveningTimer;
 
   void _handleLogout(BuildContext context) async {
     final auth = AuthService();
@@ -32,15 +81,13 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 
   void _showQRDialog(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final qrSize = screenWidth > 600 ? 250.0 : 200.0; // Responsive: 250px cho web rộng, 200px cho nhỏ
+    final qrSize = screenWidth > 600 ? 250.0 : 200.0;
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -48,14 +95,11 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                 width: qrSize,
                 height: qrSize,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.blue[100]!, // Viền xanh nhạt
-                    width: 2,
-                  ),
+                  border: Border.all(color: const Color(0xFFBBDEFB), width: 2),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue[50]!.withOpacity(0.5),
+                      color: const Color(0xFFE3F2FD).withOpacity(0.5),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -63,20 +107,13 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.asset(
-                    'assets/img/qr.jpg',
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image.asset('assets/img/qr.jpg', fit: BoxFit.contain),
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
                 'Quét mã QR để truy cập nhanh',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -95,10 +132,9 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentLocation(); // Tự động load vị trí khi mở screen
+    _loadCurrentLocation();
     if (kIsWeb) {
       try {
-        // Register iframe factory (sẽ dùng URL dynamic sau)
         ui.platformViewRegistry.registerViewFactory(
           'small-google-maps-iframe',
           (int viewId) {
@@ -116,41 +152,104 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
         debugPrint('Lỗi register small iframe: $e');
       }
     }
+
+    // Timer auto-scroll cho vouchers (2s mỗi hình)
+    _voucherTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (mounted) {
+        _currentVoucherIndex = (_currentVoucherIndex + 1) % _voucherImages.length;
+        _voucherController.animateToPage(
+          _currentVoucherIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+
+    // Timer cho buổi sáng (delay 0.5s để không đồng bộ)
+    Timer(const Duration(milliseconds: 500), () {
+      _morningTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+        if (mounted) {
+          _currentMorningIndex = (_currentMorningIndex + 1) % _morningImages.length;
+          _morningController.animateToPage(
+            _currentMorningIndex,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    });
+
+    // Timer cho buổi trưa (delay 1s)
+    Timer(const Duration(seconds: 1), () {
+      _afternoonTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+        if (mounted) {
+          _currentAfternoonIndex = (_currentAfternoonIndex + 1) % _afternoonImages.length;
+          _afternoonController.animateToPage(
+            _currentAfternoonIndex,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    });
+
+    // Timer cho buổi tối (delay 1.5s)
+    Timer(const Duration(milliseconds: 1500), () {
+      _eveningTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+        if (mounted) {
+          _currentEveningIndex = (_currentEveningIndex + 1) % _eveningImages.length;
+          _eveningController.animateToPage(
+            _currentEveningIndex,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _voucherTimer?.cancel();
+    _morningTimer?.cancel();
+    _afternoonTimer?.cancel();
+    _eveningTimer?.cancel();
+    _voucherController.dispose();
+    _morningController.dispose();
+    _afternoonController.dispose();
+    _eveningController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCurrentLocation() async {
     try {
-      // Kiểm tra GPS enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _showSnackBar('Bật GPS để lấy vị trí chính xác.');
+        _showSnackBar('Bật GPS để lấy vị trí chính xác');
         _setDefaultMap();
         return;
       }
 
-      // Request permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          _showSnackBar('Cần quyền vị trí để cập nhật map.');
+          _showSnackBar('Cần quyền vị trí để cập nhật map');
           _setDefaultMap();
           return;
         }
       }
 
-      // Lấy vị trí (tương tự JS: enableHighAccuracy, timeout)
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10), // Timeout như JS
+        timeLimit: const Duration(seconds: 10),
       );
       setState(() {
         _currentPosition = LatLng(position.latitude, position.longitude);
       });
 
-      // Cập nhật URL embed với vị trí user (không cần key, như JS code)
       _updateMapUrl(_currentPosition!.latitude, _currentPosition!.longitude);
-      _showSnackBar('Đã cập nhật vị trí của bạn!');
+      _showSnackBar('Đã cập nhật vị trí của bạn');
     } catch (e) {
       debugPrint('Lỗi lấy vị trí: $e');
       _showSnackBar('Sử dụng vị trí mặc định do lỗi: $e');
@@ -159,10 +258,8 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
   }
 
   void _updateMapUrl(double lat, double lng) {
-    // Generate URL embed dynamic với vị trí user (không cần key, như JS: q=lat,lng&hl=vi&z=15&output=embed)
     _mapEmbedUrl = 'https://www.google.com/maps?q=${lat},${lng}&hl=vi&z=15&output=embed';
     if (kIsWeb && mounted) {
-      // Re-register iframe với URL mới trên web
       ui.platformViewRegistry.registerViewFactory(
         'small-google-maps-iframe',
         (int viewId) {
@@ -176,7 +273,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
           return iframe;
         },
       );
-      setState(() {}); // Refresh UI
+      setState(() {});
     }
   }
 
@@ -197,172 +294,367 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trang người dùng'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _handleLogout(context),
-          )
-        ],
+    // Theme màu mệnh Thủy
+    final theme = Theme.of(context).copyWith(
+      primaryColor: const Color(0xFF1976D2),
+      scaffoldBackgroundColor: const Color(0xFFE3F2FD),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Color(0xFF1976D2)),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Ý 1: Button Mã QR
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton.icon(
-                onPressed: () => _showQRDialog(context),
-                icon: const Icon(Icons.qr_code),
-                label: const Text('Mã QR'),
-              ),
-            ),
-            // Ý 2 & 3: Buttons Tìm kiếm và Hồ sơ
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ViewSearch()),
-                        );
-                      },
-                      icon: const Icon(Icons.search),
-                      label: const Text('Tìm kiếm'),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ViewUser()),
-                        );
-                      },
-                      icon: const Icon(Icons.person),
-                      label: const Text('Hồ sơ'),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // Ý 4: Thanh tìm kiếm
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Tìm kiếm...',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            // Ý 4: Bản đồ nhỏ (với vị trí hiện tại, fix nhỏ gọn hơn)
-            if (kIsWeb)
+    );
+
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(toolbarHeight: 0),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Top row: QR và tìm kiếm ở trên, hồ sơ nhỏ hơn (size 16)
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text('Bản đồ nhỏ (vị trí hiện tại): '),
-                        IconButton(
-                          icon: const Icon(Icons.refresh, size: 20),
-                          onPressed: _loadCurrentLocation, // Refresh vị trí
+  padding: const EdgeInsets.fromLTRB(12, 40, 12, 16),
+  child: Row(
+    children: [
+      // Nút QR nhỏ gọn
+      SizedBox(
+        width: 40,
+        height: 40,
+        child: IconButton(
+          onPressed: () => _showQRDialog(context),
+          icon: const Icon(Icons.qr_code_scanner, size: 24, color: Color(0xFF1976D2)),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            padding: EdgeInsets.zero,
+            elevation: 1,
+          ),
+        ),
+      ),
+      const SizedBox(width: 8),
+      // Ô tìm kiếm chiếm giữa
+      Expanded(
+        child: TextField(
+          decoration: InputDecoration(
+            hintText: 'Tìm kiếm...',
+            prefixIcon: const Icon(Icons.search, color: Color(0xFF42A5F5), size: 20),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+        ),
+      ),
+      const SizedBox(width: 8),
+      // Nút hồ sơ nhỏ gọn
+      SizedBox(
+        width: 40,
+        height: 40,
+        child: IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ViewUser()),
+            );
+          },
+          icon: const Icon(Icons.person, size: 22, color: Color(0xFF1976D2)),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            padding: EdgeInsets.zero,
+            elevation: 1,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
+              // Bản đồ
+              if (kIsWeb)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFBBDEFB)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFE3F2FD),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    ConstrainedBox(  // Lock size chặt để tránh expand
-                      constraints: const BoxConstraints(
-                        maxWidth: 300,  // Rộng max 300px
-                        maxHeight: 200, // Cao 200px
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: _mapEmbedUrl.isEmpty
-                            ? const Center(child: CircularProgressIndicator()) // Loading
-                            : const HtmlElementView(viewType: 'small-google-maps-iframe'),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: _mapEmbedUrl.isEmpty
+                          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1976D2)))
+                          : const HtmlElementView(viewType: 'small-google-maps-iframe'),
                     ),
-                    if (_currentPosition != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
-                          'Vị trí: ${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}',
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: const Color(0xFFE3F2FD),
+                    ),
+                    child: const Center(
+                      child: Text('Bản đồ chỉ hỗ trợ trên web', style: TextStyle(color: Color(0xFF1976D2))),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              // Các button category
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _buildCategoryButton('Đồ ăn', Icons.restaurant, const Color(0xFF2196F3)),
+                    _buildCategoryButton('Đi chợ', Icons.shopping_cart, const Color(0xFF42A5F5)),
+                    _buildCategoryButton('Đồ uống', Icons.local_drink, const Color(0xFF64B5F6)),
+                    _buildCategoryButton('Giao hàng', Icons.delivery_dining, const Color(0xFF90CAF9)),
+                    _buildCategoryButton('Tin nhắn', Icons.message, const Color(0xFFB3E5FC)),
+                    _buildCategoryButton('Tính cách của bạn', Icons.psychology, const Color(0xFFE1F5FE)),
+                    _buildCategoryButton('Ưu ái', Icons.favorite, const Color(0xFF1976D2)),
+                    _buildCategoryButton('Mua nợ', Icons.payment, const Color(0xFF2196F3)),
                   ],
                 ),
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text('Bản đồ nhỏ chỉ hỗ trợ trên web'),
               ),
-            // Ý 5 & 6: Các button nhỏ vô hiệu hóa
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                alignment: WrapAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Đồ ăn'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Đi chợ'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Đồ uống'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Giao hàng'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Tin nhắn'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Tính cách của bạn'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Ưu ái'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Mua nợ'),
-                  ),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Tâm sự'),
-                  ),
-                ],
+              const SizedBox(height: 20),
+              // Section Khuyến mãi
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Khuyến mãi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 150,
+                      child: PageView.builder(
+                        controller: _voucherController,
+                        itemCount: _voucherImages.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(_voucherImages[index], fit: BoxFit.cover, width: double.infinity),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Indicators
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_voucherImages.length, (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        width: _currentVoucherIndex == index ? 8 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: _currentVoucherIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      )),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 24),
+              // Section Combo gợi ý
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Combo gợi ý', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
+                    const SizedBox(height: 16),
+                    // Buổi sáng
+                    const Text('Buổi sáng', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF42A5F5))),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 150,
+                      child: PageView.builder(
+                        controller: _morningController,
+                        itemCount: _morningImages.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(_morningImages[index], fit: BoxFit.cover, width: double.infinity),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_morningImages.length, (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        width: _currentMorningIndex == index ? 8 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: _currentMorningIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      )),
+                    ),
+                    const SizedBox(height: 16),
+                    // Buổi trưa
+                    const Text('Buổi trưa', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF42A5F5))),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 150,
+                      child: PageView.builder(
+                        controller: _afternoonController,
+                        itemCount: _afternoonImages.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(_afternoonImages[index], fit: BoxFit.cover, width: double.infinity),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_afternoonImages.length, (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        width: _currentAfternoonIndex == index ? 8 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: _currentAfternoonIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      )),
+                    ),
+                    const SizedBox(height: 16),
+                    // Buổi tối
+                    const Text('Buổi tối', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF42A5F5))),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 150,
+                      child: PageView.builder(
+                        controller: _eveningController,
+                        itemCount: _eveningImages.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(_eveningImages[index], fit: BoxFit.cover, width: double.infinity),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_eveningImages.length, (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        width: _currentEveningIndex == index ? 8 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: _currentEveningIndex == index ? const Color(0xFF1976D2) : Colors.grey,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      )),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+        // Chat bot button "Tâm sự" dưới góc phải, nổi, dưới cùng
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showChatBotDialog(context);
+          },
+          backgroundColor: const Color(0xFF42A5F5),
+          child: const Icon(Icons.chat_bubble, color: Colors.white),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ),
+    );
+  }
+
+  // Dialog cho chat bot "Tâm sự"
+  void _showChatBotDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tâm sự với Chat Bot'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Chào bạn! Tôi là chat bot của Doan Mobi. Bạn muốn tâm sự gì hôm nay?'),
+            const SizedBox(height: 10),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Nhập tin nhắn của bạn...',
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (value) {
+                Navigator.of(context).pop(); // Đóng dialog tạm thời
+                // Có thể mở full chat screen sau
+              },
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper build category button (bỏ "Tâm sự" ra khỏi Wrap)
+  Widget _buildCategoryButton(String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE3F2FD),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(color: color, fontSize: 12)),
+        ],
       ),
     );
   }
