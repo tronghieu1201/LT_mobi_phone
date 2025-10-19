@@ -19,11 +19,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final AuthService _auth = AuthService();
 
+  // --- Bảng màu Cờ Đỏ Sao Vàng ---
+  // Màu Đỏ cờ (màu nhấn chính)
+  static const Color vietnamRed = Color(0xFFDA251D);
+  // Màu Vàng sao (màu nhấn phụ)
+  static const Color vietnamYellow = Color(0xFFFFC107); // (Màu Amber 500-600)
+  // Màu chữ chính (trên nền trắng)
+  static Color darkTextColor = Colors.black87;
+  // Màu chữ phụ (trên nền đỏ)
+  static Color lightTextColor = Colors.white;
+  // Màu nền chính
+  static Color backgroundColor = Colors.grey[50]!; // Nền hơi xám 1 chút cho dịu mắt
+
   void _register() async {
     if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty || nameCtrl.text.trim().isEmpty || phoneCtrl.text.trim().isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
+          SnackBar(
+            content: const Text('Vui lòng nhập đầy đủ thông tin'),
+            backgroundColor: Colors.red[600], // Màu đỏ cảnh báo
+          ),
         );
       }
       return;
@@ -49,14 +64,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (result == "success") {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Đăng ký thành công")),
+            SnackBar(
+              content: const Text("Đăng ký thành công"),
+              backgroundColor: Colors.green[600], // Màu xanh thành công
+            ),
           );
           Navigator.pop(context);
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result ?? "Lỗi không xác định")),
+            SnackBar(
+              content: Text(result ?? "Lỗi không xác định"),
+              backgroundColor: Colors.red[600],
+            ),
           );
         }
       }
@@ -74,7 +95,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMsg)),
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red[600],
+          ),
         );
       }
     } catch (e) {
@@ -83,7 +107,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi không xác định: $e')),
+          SnackBar(
+            content: Text('Lỗi không xác định: $e'),
+            backgroundColor: Colors.red[600],
+          ),
         );
       }
     }
@@ -92,17 +119,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Nền nhạt
+      backgroundColor: backgroundColor, // Nền xám rất nhạt
       appBar: AppBar(
-        title: const Text("Đăng ký tài khoản", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blue[600],
+        title: const Text(""),
+        backgroundColor: Colors.transparent, // Nền AppBar trong suốt
         elevation: 0,
+        iconTheme: IconThemeData(color: vietnamRed), // Nút back (nếu có) màu đỏ
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            // Hình ảnh đại diện
+            // Hình ảnh đại diện khi vào app
             Container(
               height: 200,
               width: double.infinity,
@@ -111,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withOpacity(0.1), // Bóng đen mờ
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -125,14 +153,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-            // Xin chào với icon cờ Việt Nam (căn giữa)
+            // Xin chào quý khách với icon cờ Việt Nam (căn giữa)
             Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    "Hố Hố",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                  Text(
+                    "Đăng ký tài khoản",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+                    ),
                   ),
                   const SizedBox(width: 8),
                   SizedBox(
@@ -146,73 +178,139 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-          
             const SizedBox(height: 30),
+
             // Form trong Card
             Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              color: Colors.white, // Card nền trắng tinh
+              shadowColor: Colors.black.withOpacity(0.1),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
                     TextField(
                       controller: nameCtrl,
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: darkTextColor), // Chữ đen
+                      decoration: InputDecoration(
                         labelText: 'Tên',
-                        prefixIcon: Icon(Icons.person_outline, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        prefixIcon: const Icon(Icons.person_outline,
+                            color: vietnamYellow), // Icon màu VÀNG
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: vietnamRed, width: 2.0), // Viền focus màu ĐỎ
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 15),
                     TextField(
                       controller: phoneCtrl,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: darkTextColor), // Chữ đen
+                      decoration: InputDecoration(
                         labelText: 'Số điện thoại',
-                        prefixIcon: Icon(Icons.phone_outlined, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        prefixIcon: const Icon(Icons.phone_outlined,
+                            color: vietnamYellow), // Icon màu VÀNG
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: vietnamRed, width: 2.0), // Viền focus màu ĐỎ
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 15),
                     TextField(
                       controller: emailCtrl,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: darkTextColor), // Chữ đen
+                      decoration: InputDecoration(
                         labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        prefixIcon: const Icon(Icons.email_outlined,
+                            color: vietnamYellow), // Icon màu VÀNG
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: vietnamRed, width: 2.0), // Viền focus màu ĐỎ
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 15),
                     TextField(
                       controller: passCtrl,
                       obscureText: true,
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: darkTextColor), // Chữ đen
+                      decoration: InputDecoration(
                         labelText: 'Mật khẩu',
-                        prefixIcon: Icon(Icons.lock_outline, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: vietnamYellow), // Icon màu VÀNG
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: vietnamRed, width: 2.0), // Viền focus màu ĐỎ
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 25),
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
                         onPressed: loading ? null : _register,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[600],
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          backgroundColor: vietnamRed, // Nút màu ĐỎ cờ
+                          foregroundColor: lightTextColor, // Chữ TRẮNG
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                           elevation: 3,
                         ),
                         child: loading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                    color: lightTextColor,
+                                    strokeWidth: 2), // Loading TRẮNG
                               )
-                            : const Text("Đăng ký", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            : Text('Đăng ký',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: lightTextColor)), // Chữ TRẮNG
                       ),
                     ),
                   ],

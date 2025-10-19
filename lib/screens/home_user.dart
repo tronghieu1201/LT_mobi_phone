@@ -578,15 +578,18 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         controller: _voucherController,
                         itemCount: _voucherImages.length,
                         itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
-                              child: Image.asset(
-                                _voucherImages[index],
-                                fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
-                                width: double.infinity,
-                                height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                          return GestureDetector(
+                            onTap: _showDevelopingSnackBar,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
+                                child: Image.asset(
+                                  _voucherImages[index],
+                                  fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
+                                  width: double.infinity,
+                                  height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                                ),
                               ),
                             ),
                           );
@@ -640,15 +643,18 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         controller: _morningController,
                         itemCount: _morningImages.length,
                         itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
-                              child: Image.asset(
-                                _morningImages[index],
-                                fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
-                                width: double.infinity,
-                                height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                          return GestureDetector(
+                            onTap: _showDevelopingSnackBar,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
+                                child: Image.asset(
+                                  _morningImages[index],
+                                  fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
+                                  width: double.infinity,
+                                  height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                                ),
                               ),
                             ),
                           );
@@ -686,15 +692,18 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         controller: _afternoonController,
                         itemCount: _afternoonImages.length,
                         itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
-                              child: Image.asset(
-                                _afternoonImages[index],
-                                fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
-                                width: double.infinity,
-                                height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                          return GestureDetector(
+                            onTap: _showDevelopingSnackBar,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
+                                child: Image.asset(
+                                  _afternoonImages[index],
+                                  fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
+                                  width: double.infinity,
+                                  height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                                ),
                               ),
                             ),
                           );
@@ -732,15 +741,18 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         controller: _eveningController,
                         itemCount: _eveningImages.length,
                         itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
-                              child: Image.asset(
-                                _eveningImages[index],
-                                fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
-                                width: double.infinity,
-                                height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                          return GestureDetector(
+                            onTap: _showDevelopingSnackBar,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12), // TĂNG border radius nhẹ để bo góc đẹp hơn
+                                child: Image.asset(
+                                  _eveningImages[index],
+                                  fit: BoxFit.cover, // Giữ cover để lấp đầy mà không méo
+                                  width: double.infinity,
+                                  height: double.infinity, // Đảm bảo lấp đầy chiều cao
+                                ),
                               ),
                             ),
                           );
@@ -789,17 +801,17 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Tâm sự với Chat Bot',
+        title: Text('A di đà phật.....',
             style: TextStyle(color: vietnamRed)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-                'Chào bạn! Tôi là chat bot của Doan Mobi. Bạn muốn tâm sự gì hôm nay?'),
+                'Muốn nói gì...'),
             const SizedBox(height: 10),
             TextField(
               decoration: InputDecoration(
-                hintText: 'Nhập tin nhắn của bạn...',
+                hintText: 'Nhập gì đi bạn ...',
                 border: OutlineInputBorder(
                     borderSide: BorderSide(
                         color: vietnamYellow.withOpacity(0.5))),

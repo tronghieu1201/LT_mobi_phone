@@ -354,7 +354,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   fit: BoxFit.contain,
                 ),
               ),
-              label: Text("Chưa có tài khoản? Đăng ký",
+              label: Text("Đăng ký",
                   style: TextStyle(color: vietnamRed)), // Chữ màu ĐỎ cờ
               style: TextButton.styleFrom(
                   foregroundColor: vietnamRed), // Màu chữ khi nhấn
