@@ -14,19 +14,212 @@ class HomeStoreScreen extends StatelessWidget {
     );
   }
 
+  // --- Bảng màu Cờ Đỏ Sao Vàng ---
+  // Màu Đỏ cờ (màu nhấn chính)
+  static const Color vietnamRed = Color(0xFFDA251D);
+  // Màu Vàng sao (màu nhấn phụ)
+  static const Color vietnamYellow = Color(0xFFFFC107); // (Màu Amber 500-600)
+  // Màu chữ chính (trên nền trắng)
+  static Color darkTextColor = Colors.black87;
+  // Màu chữ phụ (trên nền đỏ)
+  static Color lightTextColor = Colors.white;
+  // Màu nền chính
+  static Color backgroundColor = Colors.grey[50]!; // Nền hơi xám 1 chút cho dịu mắt
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor, // Nền xám rất nhạt
       appBar: AppBar(
-        title: const Text('Trang cửa hàng'),
+        title: Text(
+          "",
+          style: TextStyle(
+            color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.transparent, // Nền AppBar trong suốt
+        elevation: 0,
+        iconTheme: IconThemeData(color: vietnamRed), // Icon màu đỏ
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: Icon(Icons.logout, color: vietnamRed),
             onPressed: () => _handleLogout(context),
-          )
+          ),
         ],
       ),
-      body: const Center(child: Text("Chào mừng cửa hàng 🏪")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Xin chào Cửa hàng với icon cờ Việt Nam (căn giữa)
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Rằm Tháng 7 - Cửa hàng",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Image.asset(
+                      'assets/img/VietNam.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 50),
+
+            // Các nút trong Card
+            Expanded(
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                color: Colors.white, // Card nền trắng tinh
+                shadowColor: Colors.black.withOpacity(0.1),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Button Check đơn hàng
+                      SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // TODO: Navigate to ManageOrdersScreen for store
+                          },
+                          icon: Icon(Icons.list_alt, color: lightTextColor, size: 24),
+                          label: Text(
+                            'Check đơn hàng',
+                            style: TextStyle(
+                              color: lightTextColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: vietnamRed, // Nút màu ĐỎ cờ
+                            foregroundColor: lightTextColor, // Chữ TRẮNG
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            elevation: 3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Button Quản lý cửa hàng
+                      SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // TODO: Navigate to ManageStoreScreen (profile/info)
+                          },
+                          icon: Icon(Icons.store, color: lightTextColor, size: 24),
+                          label: Text(
+                            'Quản lý cửa hàng',
+                            style: TextStyle(
+                              color: lightTextColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: vietnamRed, // Nút màu ĐỎ cờ
+                            foregroundColor: lightTextColor, // Chữ TRẮNG
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            elevation: 3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Button Quản lý sản phẩm (chưa cần hoạt động)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Chưa cần hoạt động
+                          },
+                          icon: Icon(Icons.inventory_2, color: vietnamRed, size: 24),
+                          label: Text(
+                            'Quản lý sản phẩm',
+                            style: TextStyle(
+                              color: vietnamRed,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: vietnamYellow, // Màu vàng cho button chưa hoạt động
+                            foregroundColor: vietnamRed, // Chữ đỏ
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            elevation: 3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Button Quản lý báo cáo (chưa cần hoạt động)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Chưa cần hoạt động
+                          },
+                          icon: Icon(Icons.analytics, color: vietnamRed, size: 24),
+                          label: Text(
+                            'Quản lý báo cáo',
+                            style: TextStyle(
+                              color: vietnamRed,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: vietnamYellow, // Màu vàng cho button chưa hoạt động
+                            foregroundColor: vietnamRed, // Chữ đỏ
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            elevation: 3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Button đăng xuất
+            TextButton.icon(
+              onPressed: () => _handleLogout(context),
+              icon: Icon(Icons.logout, color: vietnamRed),
+              label: Text(
+                "Đăng xuất",
+                style: TextStyle(color: vietnamRed, fontSize: 16),
+              ),
+              style: TextButton.styleFrom(
+                  foregroundColor: vietnamRed), // Màu chữ khi nhấn
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

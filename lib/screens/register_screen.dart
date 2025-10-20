@@ -214,6 +214,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
+                    // Dropdown cho vai trò (user hoặc store)
+                    DropdownButtonFormField<String>(
+                      value: role,
+                      decoration: InputDecoration(
+                        labelText: 'Vai trò',
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        prefixIcon: const Icon(Icons.account_circle_outlined,
+                            color: vietnamYellow), // Icon màu VÀNG
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: vietnamRed, width: 2.0), // Viền focus màu ĐỎ
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'user',
+                          child: Text('Người dùng'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'store',
+                          child: Text('Cửa hàng'),
+                        ),
+                      ],
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            role = newValue;
+                          });
+                        }
+                      },
+                      style: TextStyle(color: darkTextColor), // Chữ đen
+                    ),
+                    const SizedBox(height: 15),
                     TextField(
                       controller: phoneCtrl,
                       keyboardType: TextInputType.phone,

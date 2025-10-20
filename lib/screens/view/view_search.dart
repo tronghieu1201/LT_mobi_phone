@@ -6,13 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
 import 'dart:html' as html;
 import '../search_v2/propose.dart';
 import '../search_v2/outstanding.dart';
 
 class ViewSearch extends StatefulWidget {
   final LatLng? currentPosition;
-  const ViewSearch({super.key, required this.currentPosition});
+  const ViewSearch({super.key, this.currentPosition});
 
   @override
   State<ViewSearch> createState() => _ViewSearchState();
@@ -22,6 +23,7 @@ class _ViewSearchState extends State<ViewSearch> {
   final TextEditingController _searchController = TextEditingController();
   String _mapEmbedUrl = '';
   String _currentViewType = '';
+  LatLng? _currentPosition;
 
   // --- Bảng màu Cờ Đỏ Sao Vàng ---
   // Màu Đỏ cờ (màu nhấn chính)
@@ -40,7 +42,53 @@ class _ViewSearchState extends State<ViewSearch> {
   @override
   void initState() {
     super.initState();
-    _updateMapUrl(widget.currentPosition ?? _defaultPosition);
+    if (widget.currentPosition != null) {
+      _currentPosition = widget.currentPosition;
+      _updateMapUrl(_currentPosition!);
+    } else {
+      _loadCurrentPosition();
+    }
+  }
+
+  // Hàm tự động lấy vị trí hiện tại
+  Future<void> _loadCurrentPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Kiểm tra service GPS
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      _updateMapUrl(_defaultPosition);
+      if (mounted) setState(() {});
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        _updateMapUrl(_defaultPosition);
+        if (mounted) setState(() {});
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      _updateMapUrl(_defaultPosition);
+      if (mounted) setState(() {});
+      return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // Lấy vị trí hiện tại
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    setState(() {
+      _currentPosition = LatLng(position.latitude, position.longitude);
+    });
+
+    _updateMapUrl(_currentPosition!);
   }
 
   void _updateMapUrl(LatLng position) {
@@ -71,13 +119,13 @@ class _ViewSearchState extends State<ViewSearch> {
     return 'https://www.google.com/maps?q=${lat},${lng}&hl=vi&z=${zoom}&output=embed';
   }
 
-  Widget _buildImageContainer(String imagePath) {
+  Widget _buildImageContainer(String imagePath, String category) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => Outstanding(currentPosition: widget.currentPosition),
+            builder: (_) => Outstanding(currentPosition: _currentPosition ?? _defaultPosition, category: category),
           ),
         );
       },
@@ -107,7 +155,7 @@ class _ViewSearchState extends State<ViewSearch> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => Propose(currentPosition: widget.currentPosition),
+            builder: (_) => Propose(currentPosition: _currentPosition ?? _defaultPosition),
           ),
         );
       },
@@ -148,28 +196,22 @@ class _ViewSearchState extends State<ViewSearch> {
       ),
     );
 
-    final List<String> highlightImages = [
-      'assets/img/gs25R.jpg',
-      'assets/img/Jollibee.jpg',
-      'assets/img/ministop.jpg',
-      'assets/img/pharmacity.png',
-      'assets/img/starbucks.jpg',
-      'assets/img/cafe.png',
-      'assets/img/kfc.jpg',
-      'assets/img/durex.webp',
-      'assets/img/phuclong.jpg',
+    final List<Map<String, String>> highlightData = [
+      {'path': 'assets/img/gs25R.jpg', 'category': 'GS25'},
+      {'path': 'assets/img/Jollibee.jpg', 'category': 'Jollibee'},
+      {'path': 'assets/img/ministop.jpg', 'category': 'Ministop'},
+      {'path': 'assets/img/Highlands.png', 'category': 'Highlands'},
+      {'path': 'assets/img/phuclong.jpg', 'category': 'Phu Long'},
+      {'path': 'assets/img/HTNG.png', 'category': 'HTNG'},
     ];
 
     final List<String> suggestLabels = [
       'Bánh mì',
-      'Mỳ canh',
+      'Mỳ cay',
       'Cơm sườn',
       'Nước mía',
-      'Trà sửa',
       'Cafe',
-      'Thăng hoa',
-      'Cháo',
-      'Bún',
+      'Bún bò',
     ];
 
     return Theme(
@@ -201,7 +243,7 @@ class _ViewSearchState extends State<ViewSearch> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Ô vị trí của bạn (thu nhỏ lại: padding nhỏ hơn, text ngắn gọn)
+              // Ô vị trí của bạn (hiển thị vị trí đang load hoặc đã load)
               Card(
                 elevation: 4,
                 color: Colors.white,
@@ -209,22 +251,36 @@ class _ViewSearchState extends State<ViewSearch> {
                     borderRadius: BorderRadius.circular(12)),
                 shadowColor: Colors.black.withOpacity(0.1),
                 child: Padding(
-                  padding: const EdgeInsets.all(12.0), // Giảm từ 16 xuống 12
+                  padding: const EdgeInsets.all(12.0),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min, // Thu nhỏ row
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.location_on, color: vietnamYellow, size: 20), // Icon nhỏ hơn
-                      const SizedBox(width: 6), // Giảm khoảng cách
-                      Text(
-                        'Vị trí hiện tại', // Ngắn gọn hơn
-                        style: TextStyle(fontSize: 14, color: vietnamRed), // Font nhỏ hơn
+                      Icon(Icons.location_on, color: vietnamYellow, size: 20),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: _currentPosition == null
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Text(
+                                'Vị trí hiện tại: ${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}',
+                                style: TextStyle(fontSize: 12, color: vietnamRed),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                       ),
+                      if (_currentPosition != null)
+                        IconButton(
+                          icon: const Icon(Icons.refresh, size: 16),
+                          onPressed: _loadCurrentPosition,
+                        ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16), // Giảm khoảng cách
-              // Bản đồ nhỏ (khoảng trống đổ bản đồ vào, fixed height)
+              const SizedBox(height: 16),
+              // Bản đồ nhỏ (sẽ cập nhật tự động khi có vị trí)
               Card(
                 elevation: 4,
                 color: Colors.white,
@@ -245,7 +301,7 @@ class _ViewSearchState extends State<ViewSearch> {
                       ),
                     ),
                     Container(
-                      height: 200, // Fixed height cho bản đồ nhỏ
+                      height: 200,
                       width: double.infinity,
                       child: _mapEmbedUrl.isEmpty
                           ? const Center(child: CircularProgressIndicator())
@@ -259,7 +315,7 @@ class _ViewSearchState extends State<ViewSearch> {
                                 )
                               : Center(
                                   child: Text(
-                                    'Bản đồ chỉ hỗ trợ trên web. Vị trí: ${widget.currentPosition?.latitude.toStringAsFixed(4)}, ${widget.currentPosition?.longitude.toStringAsFixed(4)}',
+                                    'Bản đồ chỉ hỗ trợ trên web. Vị trí: ${_currentPosition?.latitude.toStringAsFixed(4)}, ${_currentPosition?.longitude.toStringAsFixed(4)}',
                                     style: TextStyle(color: Colors.grey[600]),
                                   ),
                                 ),
@@ -358,77 +414,22 @@ class _ViewSearchState extends State<ViewSearch> {
                             color: vietnamRed),
                       ),
                       const SizedBox(height: 12),
-                      Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 4.0),
-                                  child: _buildImageContainer(highlightImages[0]),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                  child: _buildImageContainer(highlightImages[1]),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: _buildImageContainer(highlightImages[2]),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 4.0),
-                                  child: _buildImageContainer(highlightImages[3]),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                  child: _buildImageContainer(highlightImages[4]),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: _buildImageContainer(highlightImages[5]),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 4.0),
-                                  child: _buildImageContainer(highlightImages[6]),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                  child: _buildImageContainer(highlightImages[7]),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: _buildImageContainer(highlightImages[8]),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          childAspectRatio: 1.0,
+                          crossAxisSpacing: 4.0,
+                          mainAxisSpacing: 4.0,
+                        ),
+                        itemCount: highlightData.length,
+                        itemBuilder: (context, index) {
+                          return _buildImageContainer(
+                            highlightData[index]['path']!,
+                            highlightData[index]['category']!,
+                          );
+                        },
                       ),
                     ],
                   ),
