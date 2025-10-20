@@ -1,8 +1,10 @@
+// lib/screens/view/view_food.dart (updated)
 import 'dart:ui_web' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:html' as html;
+import 'view_v2/propose_v2.dart'; // Corrected import path
 
 class ViewFood extends StatefulWidget {
   final LatLng? currentPosition;
@@ -29,6 +31,9 @@ class _ViewFoodState extends State<ViewFood> {
   static Color backgroundColor = Colors.grey[50]!; // Nền hơi xám 1 chút cho dịu mắt
 
   static const LatLng _defaultPosition = LatLng(21.0278, 105.8342);
+
+  // Categories from propose.dart for food
+  final List<String> _foodCategories = ['Bánh mì', 'Mỳ cay', 'Cơm sườn', 'Bún bò'];
 
   @override
   void initState() {
@@ -61,6 +66,41 @@ class _ViewFoodState extends State<ViewFood> {
       }
     }
     if (mounted) setState(() {});
+  }
+
+  void _navigateToPropose(String category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProposeV2(),
+        settings: RouteSettings(
+          name: '/propose_v2',
+          arguments: {'currentPosition': widget.currentPosition, 'category': category},
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestButton(String label) {
+    return OutlinedButton(
+      onPressed: () => _navigateToPropose(label),
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: vietnamYellow, width: 1.5),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: vietnamYellow,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
   }
 
   @override
@@ -185,54 +225,12 @@ class _ViewFoodState extends State<ViewFood> {
                       ),
                       const SizedBox(height: 12),
                       Container(
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: vietnamRed.withOpacity(0.5)),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Danh sách đề xuất đồ ăn (thêm nội dung sau)',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Nổi bật gần đây
-              Card(
-                elevation: 4,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                shadowColor: Colors.black.withOpacity(0.1),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Nổi bật gần đây',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: vietnamRed),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: vietnamRed.withOpacity(0.5)),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Danh sách nổi bật gần đây (thêm nội dung sau)',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
+                        alignment: Alignment.center,
+                        child: Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          alignment: WrapAlignment.center,
+                          children: _foodCategories.map((category) => _buildSuggestButton(category)).toList(),
                         ),
                       ),
                     ],

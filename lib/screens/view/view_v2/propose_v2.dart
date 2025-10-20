@@ -1,4 +1,4 @@
-// lib/screens/search_v2/propose.dart
+// lib/view/view_v2/propose_v2.dart
 import 'dart:ui_web' as ui;
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
@@ -7,19 +7,19 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class Propose extends StatefulWidget {
-  final LatLng? currentPosition;
-  final String? category;
-  const Propose({super.key, required this.currentPosition, this.category});
+class ProposeV2 extends StatefulWidget {
+  const ProposeV2({super.key});
 
   @override
-  State<Propose> createState() => _ProposeState();
+  State<ProposeV2> createState() => _ProposeV2State();
 }
 
-class _ProposeState extends State<Propose> {
+class _ProposeV2State extends State<ProposeV2> {
   String _mapEmbedUrl = '';
   static const LatLng _defaultPosition = LatLng(10.7769, 106.7009); // Fallback TP. Hồ Chí Minh
   String _currentViewType = '';
+  LatLng? _currentPosition;
+  String? _category;
 
   // --- Bảng màu Cờ Đỏ Sao Vàng ---
   static const Color vietnamRed = Color(0xFFDA251D);
@@ -33,16 +33,21 @@ class _ProposeState extends State<Propose> {
       {'name': 'Lò Bánh Mì Hà Nội', 'address': '72 Man Thiện, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0985980282'},
       {'name': 'Lò Bánh Mì Khánh Mập', 'address': '45 Man Thiện, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0974366846'},
     ],
-    'Mì cay': [
+    'Mỳ cay': [
       {'name': 'Mì cay Naga - Man Thiện', 'address': '30a Man Thiện, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
     ],
-    'Cơm': [
+    'Cơm sườn': [
       {'name': 'Cơm tấm Sài Gòn 918 Lão Trư', 'address': '918 Song Hành Xa Lộ Hà Nội, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh 71206, Việt Nam', 'phone': '0707210606'},
       {'name': 'MIN MIN - Cơm Gà & Ăn Vặt', 'address': '121A Đ. Tân Lập 2, P, Thủ Đức, Thành phố Hồ Chí Minh 72000, Việt Nam', 'phone': '0346507177'},
       {'name': 'Tiệm cơm nhà Phúc', 'address': '198 Man Thiện, Phường Tân Phú, Quận 9, Hồ Chí Minh, Việt Nam', 'phone': '0906032357'},
       {'name': 'Quán Cơm Trang Quận 9', 'address': '104 Man Thiện, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0937065322'},
       {'name': 'Quán Cơm Cô Thanh', 'address': 'H3 Man Thiện, Khu phố 1, Thủ Đức, Hồ Chí Minh, Việt Nam'},
       {'name': 'Quán Cơm CamRanh 385', 'address': '45 Đ. Số 385, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0332255818'},
+    ],
+    'Bún bò': [
+      {'name': 'Bún bò gốc huế - mai đình', 'address': '62/15a, 62 Đ. Số 385, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0379539022'},
+      {'name': 'Bún Bò Thắm', 'address': '73H Đ. Trương Văn Thành, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0867708791'},
+      {'name': 'Bún bò cô Út', 'address': '88C Đ. Trương Văn Thành, Khu Phố 6, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
     ],
     'Nước mía': [
       {'name': 'Nước Mía Cô Hương', 'address': 'A200/23B Đ. Lê Văn Việt, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0908109817'},
@@ -54,23 +59,41 @@ class _ProposeState extends State<Propose> {
       {'name': 'Phuc Long Coffee & Tea (Phúc Long Hutech Q.9)', 'address': '10/80c XLHN, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '02871001968'},
       {'name': 'Highlands coffee HUTECH khu E', 'address': 'VQ4P+28C, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
     ],
-    'Bún bò': [
-      {'name': 'Bún bò gốc huế - mai đình', 'address': '62/15a, 62 Đ. Số 385, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0379539022'},
-      {'name': 'Bún Bò Thắm', 'address': '73H Đ. Trương Văn Thành, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0867708791'},
-      {'name': 'Bún bò cô Út', 'address': '88C Đ. Trương Văn Thành, Khu Phố 6, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
+    'Trà sữa': [
+      {'name': 'Trà Sữa ToCoToCo Man Thiện', 'address': '271 Man Thiện, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh 700000, Việt Nam', 'phone': '1900636936'},
+      {'name': 'Sữa Gạo - Trà Sữa Cha Heo | Quận', 'address': '140A Man Thiện, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh 700000, Việt Nam', 'phone': '0938776898'},
+    ],
+    'Sinh tố': [
+      {'name': 'Tròn Quán - Sinh Tố, Nước Ép', 'address': '31B Đường 904, KP6, Thủ Đức, Thành phố Hồ Chí Minh 715650, Việt Nam', 'phone': '0977512795'},
+    ],
+    'Nước ép': [
+      {'name': 'Sinh tố nước ép a mập', 'address': '70 Man Thiện, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0965350228'},
+      {'name': 'Sinh Tố Nước Ép Kim Tuyền', 'address': '436 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '0332323977'},
     ],
   };
 
-  List<Map<String, String>> get _locations => _locationsByCategory[widget.category ?? 'Bánh mì'] ?? [];
+  List<Map<String, String>> get _locations => _locationsByCategory[_category ?? 'Bánh mì'] ?? [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (arguments != null) {
+      _currentPosition = arguments['currentPosition'] as LatLng?;
+      _category = arguments['category'] as String?;
+      _updateMapUrl();
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    final position = widget.currentPosition ?? _defaultPosition;
-    _updateMapUrl(position);
+    final position = _currentPosition ?? _defaultPosition;
+    _updateMapUrl();
   }
 
-  void _updateMapUrl(LatLng position) {
+  void _updateMapUrl() {
+    final position = _currentPosition ?? _defaultPosition;
     _mapEmbedUrl = _generateEmbedUrl(position.latitude, position.longitude);
     _currentViewType = 'propose-map-iframe-${DateTime.now().millisecondsSinceEpoch}';
     if (kIsWeb) {
@@ -105,7 +128,7 @@ class _ProposeState extends State<Propose> {
   }
 
   Future<void> _launchMaps(String locationName, String address) async {
-    final origin = widget.currentPosition ?? _defaultPosition;
+    final origin = _currentPosition ?? _defaultPosition;
     final destination = '$locationName, $address';
     final url = _generateDirectionsUrl(origin, destination);
     if (await canLaunchUrl(Uri.parse(url))) {
@@ -145,7 +168,7 @@ class _ProposeState extends State<Propose> {
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${widget.category ?? 'Đề xuất'}', style: TextStyle(color: vietnamRed)),
+              Text('${_category ?? 'Đề xuất'}', style: TextStyle(color: vietnamRed)),
               const SizedBox(width: 8),
               SizedBox(
                 width: 24,
@@ -182,7 +205,7 @@ class _ProposeState extends State<Propose> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Vị trí của bạn: ${widget.currentPosition?.latitude.toStringAsFixed(4)}, ${widget.currentPosition?.longitude.toStringAsFixed(4)}',
+                          'Vị trí của bạn: ${_currentPosition?.latitude.toStringAsFixed(4)}, ${_currentPosition?.longitude.toStringAsFixed(4)}',
                           style: TextStyle(fontSize: 12, color: vietnamRed),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -256,7 +279,7 @@ class _ProposeState extends State<Propose> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Danh sách ${widget.category} gần đây',
+                          'Danh sách ${_category} gần đây',
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -341,9 +364,10 @@ class _ProposeState extends State<Propose> {
     );
 
     final newPosition = LatLng(position.latitude, position.longitude);
+    _currentPosition = newPosition;
     setState(() {
       // Cập nhật UI nếu cần
     });
-    _updateMapUrl(newPosition);
+    _updateMapUrl();
   }
 }

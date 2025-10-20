@@ -155,7 +155,7 @@ class _ViewSearchState extends State<ViewSearch> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => Propose(currentPosition: _currentPosition ?? _defaultPosition),
+            builder: (_) => Propose(currentPosition: _currentPosition ?? _defaultPosition, category: label),
           ),
         );
       },
@@ -207,8 +207,8 @@ class _ViewSearchState extends State<ViewSearch> {
 
     final List<String> suggestLabels = [
       'Bánh mì',
-      'Mỳ cay',
-      'Cơm sườn',
+      'Mì cay',
+      'Cơm',
       'Nước mía',
       'Cafe',
       'Bún bò',

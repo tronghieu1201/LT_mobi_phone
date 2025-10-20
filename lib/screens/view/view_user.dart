@@ -34,6 +34,10 @@ class _ViewUserState extends State<ViewUser> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         _userInfo = await _authService.getUserInfo(user.uid);
+        // Đảm bảo history được khởi tạo nếu chưa có
+        if (_userInfo != null && !_userInfo!.containsKey('history')) {
+          _userInfo!['history'] = [];
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -338,6 +342,75 @@ class _ViewUserState extends State<ViewUser> {
     );
   }
 
+  void _showHistoryDialog() {
+    final List<dynamic> history = _userInfo?['history'] ?? [];
+    // Sắp xếp lịch sử theo thời gian mới nhất trước (nếu timestamp là Timestamp)
+    final sortedHistory = history
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList()
+      ..sort((a, b) {
+        final timeA = (a['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
+        final timeB = (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
+        return timeB.compareTo(timeA); // Mới nhất trước
+      });
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          'Lịch sử tìm kiếm',
+          style: TextStyle(color: vietnamRed),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: sortedHistory.isEmpty
+              ? const Center(
+                  child: Text(
+                    'Chưa có lịch sử tìm kiếm.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: sortedHistory.length,
+                  itemBuilder: (context, index) {
+                    final item = sortedHistory[index];
+                    final name = item['name'] ?? item.toString();
+                    final timestamp = item['timestamp'];
+                    String formattedTime = '';
+                    if (timestamp is Timestamp) {
+                      final dateTime = timestamp.toDate();
+                      formattedTime = '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+                    } else if (timestamp != null) {
+                      formattedTime = timestamp.toString();
+                    }
+                    return ListTile(
+                      leading: const Icon(Icons.history, color: vietnamYellow),
+                      title: Text(
+                        name,
+                        style: const TextStyle(color: vietnamRed),
+                      ),
+                      subtitle: Text(
+                        formattedTime,
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Đóng',
+              style: TextStyle(color: vietnamRed),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).copyWith(
@@ -475,19 +548,12 @@ class _ViewUserState extends State<ViewUser> {
                         padding: const EdgeInsets.all(20.0),
                         child: Column(
                           children: [
-                            Text(
-                              'Hoạt động',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold,
-                                  color: vietnamRed),
-                            ),
-                            const SizedBox(height: 16),
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
-                                onPressed: null, // Vô hiệu hóa hiện tại
-                                child: const Text('Cài đặt nâng cao',
+                                onPressed: _showHistoryDialog,
+                                child: const Text('Hoạt động',
                                     style: TextStyle(color: Colors.white)),
                               ),
                             ),

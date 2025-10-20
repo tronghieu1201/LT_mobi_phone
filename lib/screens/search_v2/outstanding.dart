@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Outstanding extends StatefulWidget {
   final LatLng? currentPosition;
@@ -102,6 +104,38 @@ class _OutstandingState extends State<Outstanding> {
       await launchUrl(Uri.parse(url));
     } else {
       _showSnackBar('Không thể mở Google Maps');
+    }
+    await _saveToHistory(locationName, address);
+  }
+
+  Future<void> _saveToHistory(String name, String address) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final uid = user.uid;
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      String collection = 'users';
+      if (!doc.exists) {
+        doc = await FirebaseFirestore.instance.collection('store').doc(uid).get();
+        collection = 'store';
+      }
+      if (!doc.exists) return;
+      Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+      List<dynamic> history = List.from(userData['history'] ?? []);
+      String fullName = '$name - $address';
+      Map<String, dynamic> entry = {
+        'name': fullName,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+      // Remove duplicates if exact match exists in last 10
+      history.removeWhere((item) => item['name'] == fullName && history.indexOf(item) >= history.length - 10);
+      history.insert(0, entry);
+      if (history.length > 50) {
+        history = history.sublist(0, 50);
+      }
+      await FirebaseFirestore.instance.collection(collection).doc(uid).update({'history': history});
+    } catch (e) {
+      debugPrint('Error saving to history: $e');
     }
   }
 
@@ -277,8 +311,8 @@ class _OutstandingState extends State<Outstanding> {
                                   style: TextStyle(color: Colors.grey[600]),
                                 ),
                                 trailing: Icon(Icons.navigation, color: vietnamYellow),
-                                onTap: () {
-                                  _launchMaps(location['name']!, location['address']!);
+                                onTap: () async {
+                                  await _launchMaps(location['name']!, location['address']!);
                                 },
                               );
                             },
