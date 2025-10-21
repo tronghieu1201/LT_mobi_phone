@@ -5,36 +5,43 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.5.0  # ⚙️ chỉnh từ ^3.9.2 xuống để tương thích Dart 3.5.4 trong Flutter 3.24.5
 
 dependencies:
   flutter:
     sdk: flutter
+
+  # Giao diện iOS
   cupertino_icons: ^1.0.8
+
+  # Mở liên kết ngoài (trình duyệt, điện thoại, mail...)
   url_launcher: ^6.3.2
 
   # Firebase & Provider
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
-  firebase_storage: ^12.3.3  # Thêm để hỗ trợ upload ảnh lên Firebase (nếu cần ở view_user)
+  firebase_storage: ^12.3.3  # Hỗ trợ upload ảnh lên Firebase
   provider: ^6.1.2
 
-  # Format phone number, dates, currency, etc.
+  # Định dạng số, tiền tệ, ngày giờ
   intl: ^0.19.0
 
   # Google Maps
   google_maps_flutter: ^2.7.0
 
-  # Geolocator cho vị trí hiện tại
+  # Vị trí hiện tại
   geolocator: ^10.1.0
 
-  # Geocoding cho tìm kiếm địa chỉ
+  # Chuyển đổi giữa toạ độ và địa chỉ
   geocoding: ^3.0.0
 
-  # Image picker và path provider cho upload ảnh (dùng ở view_user, hỗ trợ web cơ bản)
-  image_picker: ^1.1.2  # Latest stable
-  path_provider: ^2.1.4  # Latest stable
+  # Chọn ảnh từ thư viện / camera và truy xuất đường dẫn file
+  image_picker: ^1.1.2
+  path_provider: ^2.1.4
+
+  # HTTP cho chatbot API
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -44,11 +51,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Assets cho hình ảnh QR và các file khác
   assets:
     - assets/img/
 
-  # To add custom fonts, uncomment and configure:
   # fonts:
   #   - family: Schyler
   #     fonts:
