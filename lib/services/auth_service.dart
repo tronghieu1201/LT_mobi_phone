@@ -16,10 +16,14 @@ class AuthService {
     const adminPassword = '123456';
 
     try {
-      final methods = await _auth.fetchSignInMethodsForEmail(adminEmail);
-
-      if (methods.isEmpty) {
-        // Tạo admin nếu chưa có
+      await _auth.signInWithEmailAndPassword(
+        email: adminEmail,
+        password: adminPassword,
+      );
+      await _auth.signOut();
+      print('✅ Admin đã tồn tại: $adminEmail');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
         final userCred = await _auth.createUserWithEmailAndPassword(
           email: adminEmail,
           password: adminPassword,
@@ -31,18 +35,18 @@ class AuthService {
           'name': 'Admin',
           'phone': '0000000000',
           'enabled': true,
+          'history': [],  // Lưu history rỗng khi tạo tài khoản
         });
         print('✅ Admin đã được tạo: $adminEmail');
       } else {
-        print('✅ Admin đã tồn tại: $adminEmail');
+        print('⚠️ Lỗi check admin: ${e.message}');
       }
-      // ✅ KHÔNG signIn tự động nữa, để user tự login
     } catch (e) {
       print('...');
     }
   }
 
-  // Đăng ký tài khoản (với role)
+  // Đăng ký tài khoản (với role) - Lưu history rỗng
   Future<String?> register({
     required String email,
     required String password,
@@ -64,7 +68,8 @@ class AuthService {
         'name': name,
         'phone': phone,
         'role': role,
-        'enabled': true, // Mặc định enabled cho user mới
+        'enabled': true,
+        'history': [],  // Lưu history rỗng khi tạo tài khoản
       });
 
       print('✅ Người dùng mới đã được tạo: $email');
@@ -92,6 +97,7 @@ class AuthService {
         'phone': phone,
         'role': 'user',
         'enabled': true,
+        'history': [],  // Lưu history rỗng khi tạo tài khoản
       });
 
       print('✅ Người dùng mới đã được tạo: $email');
@@ -120,12 +126,12 @@ class AuthService {
           await _firestore.collection('users').doc(uid).get();
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>?;
-        final isEnabled = userData?['enabled'] ?? true; // Mặc định true nếu không có field
+        final isEnabled = userData?['enabled'] ?? true;
         if (isEnabled != false) {
           print('Đăng nhập thành công: $email (role: ${userData?['role']})');
           return userData?['role'];
         } else {
-          await _auth.signOut(); // Đăng xuất nếu bị disable
+          await _auth.signOut();
           print('❌ Tài khoản bị vô hiệu hóa: $email');
           return null;
         }
@@ -136,12 +142,12 @@ class AuthService {
           await _firestore.collection('store').doc(uid).get();
       if (storeDoc.exists) {
         final storeData = storeDoc.data() as Map<String, dynamic>?;
-        final isEnabled = storeData?['enabled'] ?? true; // Mặc định true nếu không có field
+        final isEnabled = storeData?['enabled'] ?? true;
         if (isEnabled != false) {
           print('Đăng nhập thành công: $email (role: ${storeData?['role']})');
           return storeData?['role'];
         } else {
-          await _auth.signOut(); // Đăng xuất nếu bị disable
+          await _auth.signOut();
           print('❌ Tài khoản bị vô hiệu hóa: $email');
           return null;
         }
@@ -155,19 +161,27 @@ class AuthService {
     }
   }
 
-  // ✅ Lấy thông tin người dùng (role, tên, ...)
+  // ✅ Lấy thông tin người dùng (role, tên, history...)
   Future<Map<String, dynamic>?> getUserInfo(String uid) async {
     try {
       // Kiểm tra users trước
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
       if (userDoc.exists) {
-        return userDoc.data() as Map<String, dynamic>?;
+        Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+        if (!data.containsKey('history')) {
+          data['history'] = [];  // Khởi tạo nếu chưa có
+        }
+        return data;
       }
 
       // Nếu không, kiểm tra store
       DocumentSnapshot storeDoc = await _firestore.collection('store').doc(uid).get();
       if (storeDoc.exists) {
-        return storeDoc.data() as Map<String, dynamic>?;
+        Map<String, dynamic> data = storeDoc.data() as Map<String, dynamic>;
+        if (!data.containsKey('history')) {
+          data['history'] = [];  // Khởi tạo nếu chưa có
+        }
+        return data;
       }
 
       return null;
@@ -193,7 +207,7 @@ class AuthService {
             return {
               'uid': doc.id,
               ...data,
-              'enabled': data['enabled'] ?? true, // Mặc định true nếu không có field
+              'enabled': data['enabled'] ?? true,
             };
           })
           .toList();
@@ -217,7 +231,7 @@ class AuthService {
             return {
               'uid': doc.id,
               ...data,
-              'enabled': data['enabled'] ?? true, // Mặc định true nếu không có field
+              'enabled': data['enabled'] ?? true,
             };
           })
           .toList();

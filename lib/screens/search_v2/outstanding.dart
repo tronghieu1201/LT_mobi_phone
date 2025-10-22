@@ -1,4 +1,3 @@
-// lib/screens/search_v2/outstanding.dart
 import 'dart:ui_web' as ui;
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
@@ -96,18 +95,7 @@ class _OutstandingState extends State<Outstanding> {
     return 'https://www.google.com/maps/dir/?api=1&origin=$encodedOrigin&destination=$encodedDest&travelmode=driving';
   }
 
-  Future<void> _launchMaps(String locationName, String address) async {
-    final origin = widget.currentPosition ?? _defaultPosition;
-    final destination = '$locationName, $address';
-    final url = _generateDirectionsUrl(origin, destination);
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      _showSnackBar('Không thể mở Google Maps');
-    }
-    await _saveToHistory(locationName, address);
-  }
-
+  // Lưu lịch sử tìm kiếm vào Firebase
   Future<void> _saveToHistory(String name, String address) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -125,29 +113,69 @@ class _OutstandingState extends State<Outstanding> {
       String fullName = '$name - $address';
       Map<String, dynamic> entry = {
         'name': fullName,
-        'timestamp': FieldValue.serverTimestamp(),
+        'timestamp': DateTime.now(),  // Timestamp client-side
       };
-      // Remove duplicates if exact match exists in last 10
+      // Xóa duplicate nếu có trong 10 item gần nhất
       history.removeWhere((item) => item['name'] == fullName && history.indexOf(item) >= history.length - 10);
       history.insert(0, entry);
       if (history.length > 50) {
         history = history.sublist(0, 50);
       }
       await FirebaseFirestore.instance.collection(collection).doc(uid).update({'history': history});
+      print('✅ Lưu lịch sử tìm kiếm thành công: $fullName');
     } catch (e) {
-      debugPrint('Error saving to history: $e');
+      print('Error saving history: $e');
     }
   }
 
-  void _showSnackBar(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: vietnamRed,
-        ),
-      );
+  Future<void> _launchMaps(String locationName, String address) async {
+    final origin = widget.currentPosition ?? _defaultPosition;
+    final destination = '$locationName, $address';
+    final url = _generateDirectionsUrl(origin, destination);
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể mở Google Maps'), backgroundColor: vietnamRed),
+        );
+      }
     }
+    // Lưu lịch sử sau khi mở maps
+    await _saveToHistory(locationName, address);
+  }
+
+  // Hàm reload vị trí
+  Future<void> _loadCurrentPositionForOutstanding() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    final newPosition = LatLng(position.latitude, position.longitude);
+    setState(() {
+      // Cập nhật UI nếu cần
+    });
+    _updateMapUrl(newPosition);
   }
 
   @override
@@ -169,7 +197,7 @@ class _OutstandingState extends State<Outstanding> {
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${widget.category ?? 'Nổi bật gần đây'}', style: TextStyle(color: vietnamRed)),
+              Text('${widget.category ?? 'Nổi bật'}', style: TextStyle(color: vietnamRed)),
               const SizedBox(width: 8),
               SizedBox(
                 width: 24,
@@ -191,80 +219,42 @@ class _OutstandingState extends State<Outstanding> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Vị trí của bạn
+              const SizedBox(height: 16),
               Card(
                 elevation: 4,
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 shadowColor: Colors.black.withOpacity(0.1),
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.location_on, color: vietnamYellow, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'Vị trí của bạn: ${widget.currentPosition?.latitude.toStringAsFixed(4)}, ${widget.currentPosition?.longitude.toStringAsFixed(4)}',
-                          style: TextStyle(fontSize: 12, color: vietnamRed),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.refresh, size: 16),
-                        onPressed: () async {
-                          // Reload position nếu cần
-                          await _loadCurrentPositionForOutstanding();
-                        },
-                      ),
-                    ],
+                  child: Text(
+                    'Bản đồ vị trí',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: vietnamRed),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              // Bản đồ
-              Card(
-                elevation: 4,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                shadowColor: Colors.black.withOpacity(0.1),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(
-                        'Bản đồ vị trí',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: vietnamRed),
-                      ),
-                    ),
-                    Container(
-                      height: 200, // Fixed height cho bản đồ nhỏ
-                      width: double.infinity,
-                      child: _mapEmbedUrl.isEmpty
-                          ? const Center(child: CircularProgressIndicator())
-                          : kIsWeb
-                              ? ClipRRect(
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(15),
-                                    bottomRight: Radius.circular(15),
-                                  ),
-                                  child: HtmlElementView(viewType: _currentViewType),
-                                )
-                              : Center(
-                                  child: Text(
-                                    'Bản đồ chỉ hỗ trợ trên web.',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                ),
-                    ),
-                  ],
-                ),
+              Container(
+                height: 200,
+                width: double.infinity,
+                child: _mapEmbedUrl.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : kIsWeb
+                        ? ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(15),
+                              bottomRight: Radius.circular(15),
+                            ),
+                            child: HtmlElementView(viewType: _currentViewType),
+                          )
+                        : Center(
+                            child: Text(
+                              'Bản đồ chỉ hỗ trợ trên web.',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ),
               ),
               const SizedBox(height: 20),
               // Danh sách theo category
@@ -336,38 +326,5 @@ class _OutstandingState extends State<Outstanding> {
         ),
       ),
     );
-  }
-
-  // Hàm reload vị trí trong outstanding
-  Future<void> _loadCurrentPositionForOutstanding() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return;
-    }
-
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    final newPosition = LatLng(position.latitude, position.longitude);
-    setState(() {
-      // Cập nhật UI nếu cần
-    });
-    _updateMapUrl(newPosition);
   }
 }

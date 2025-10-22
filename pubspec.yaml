@@ -5,48 +5,48 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.0  # ⚙️ chỉnh từ ^3.9.2 xuống để tương thích Dart 3.5.4 trong Flutter 3.24.5
+  sdk: ^3.8.0  # ⚙️ Cập nhật lên ^3.8.0 để tương thích với Dart mới nhất (Flutter 3.30+ dự kiến vào 2025)
 
 dependencies:
   flutter:
     sdk: flutter
 
   # Giao diện iOS
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^1.0.8  # Giữ nguyên (mới nhất)
 
   # Mở liên kết ngoài (trình duyệt, điện thoại, mail...)
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.2  # Giữ nguyên (mới nhất)
 
   # Firebase & Provider
-  firebase_core: ^3.6.0
-  firebase_auth: ^5.3.1
-  cloud_firestore: ^5.4.4
-  firebase_storage: ^12.3.3  # Hỗ trợ upload ảnh lên Firebase
-  provider: ^6.1.2
+  firebase_core: ^4.2.0  # Cập nhật từ 3.6.0
+  firebase_auth: ^6.1.1  # Cập nhật từ 5.3.1
+  cloud_firestore: ^6.0.3  # Cập nhật từ 5.4.4
+  firebase_storage: ^13.0.3  # Cập nhật từ 12.3.3
+  provider: ^6.1.5+1  # Cập nhật từ 6.1.2
 
   # Định dạng số, tiền tệ, ngày giờ
-  intl: ^0.19.0
+  intl: ^0.20.2  # Cập nhật từ 0.19.0
 
   # Google Maps
-  google_maps_flutter: ^2.7.0
+  google_maps_flutter: ^2.13.1  # Cập nhật từ 2.7.0
 
   # Vị trí hiện tại
-  geolocator: ^10.1.0
+  geolocator: ^14.0.2  # Cập nhật từ 10.1.0
 
   # Chuyển đổi giữa toạ độ và địa chỉ
-  geocoding: ^3.0.0
+  geocoding: ^4.0.0  # Cập nhật từ 3.0.0
 
   # Chọn ảnh từ thư viện / camera và truy xuất đường dẫn file
-  image_picker: ^1.1.2
-  path_provider: ^2.1.4
+  image_picker: ^1.2.0  # Cập nhật từ 1.1.2
+  path_provider: ^2.1.5  # Cập nhật từ 2.1.4
 
   # HTTP cho chatbot API
-  http: ^1.2.2
+  http: ^1.5.0  # Cập nhật từ 1.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0  # Cập nhật từ 5.0.0
 
 flutter:
   uses-material-design: true

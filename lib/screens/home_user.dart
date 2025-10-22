@@ -889,7 +889,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                   elevation: 8,
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    height: 300, // Chiều cao nhỏ gọn
+                    height: 450, // Chiều cao nhỏ gọn
                     decoration: BoxDecoration(
                       color: backgroundColor,
                       borderRadius: BorderRadius.circular(16),

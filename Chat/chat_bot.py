@@ -236,14 +236,7 @@ rules = {
         'Mình là bot nên "thích" tất cả, nhưng nếu phải chọn thì cơm tấm Sài Gòn – đậm đà Sài Gòn! Còn bạn? Kể mình nghe món "soul food" của bạn đi!',
         'Bot như mình "ăn" data, nhưng recommend Gong Cha trà sữa là "yêu thích". Bạn thì sao, fan ngọt hay mặn?'
     ]),
-    
-    # Tra cứu theo chữ cái (mở rộng)
-    'a|á|à|ả|ã|ạ': 'Chữ A: Ăn sáng hoặc nước mía? Hay "ăn gì" để mình gợi ý? Ánh nắng Sài Gòn hôm nay mưa, ăn ấm nhé!',
-    'b': 'Bánh mì hay bún bò? Chi tiết "bánh mì" đi! Bắt đầu bằng B là "bắt trend" ẩm thực!',
-    'c': 'Cơm tấm hay cafe? Bạn chọn cái nào? Chữ C cho "chill"!',
-    'm': 'Mì cay hay cơm nhà? Ngon rẻ cả! M là "mê" ăn!',
-    't': 'Trà sữa hay cơm tấm? Tối nay thử nhé? T cho "tuyệt vời"!',
-    
+
     # Xử lý lỗi/mơ hồ (tự nhiên hơn, chém gió)
     'default': random.choice([
         'Ủa, mình chưa catch kịp ý bạn. 😅 Bạn đang thèm món gì hay kể khung giờ ăn đi? Hay hỏi thời tiết xem, mưa rồi đấy!',
