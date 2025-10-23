@@ -73,123 +73,244 @@ class _ViewUserState extends State<ViewUser> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: Text('Cập nhật thông tin',
-            style: TextStyle(color: vietnamRed)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Tên
-              TextField(
-                controller: nameCtrl,
-                style: TextStyle(color: darkTextColor),
-                decoration: InputDecoration(
-                  labelText: 'Tên',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                  prefixIcon:
-                      const Icon(Icons.person_outline, color: vietnamYellow),
-                  border: const OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(10))),
-                  focusedBorder:
-                      OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
-                          borderRadius: BorderRadius.circular(10)),
-                  enabledBorder:
-                      OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(10)),
-                ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          bool isUpdating = false;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            title: Text('Cập nhật thông tin',
+                style: TextStyle(color: vietnamRed)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Tên
+                  TextField(
+                    controller: nameCtrl,
+                    style: TextStyle(color: darkTextColor),
+                    decoration: InputDecoration(
+                      labelText: 'Tên',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon:
+                          const Icon(Icons.person_outline, color: vietnamYellow),
+                      border: const OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10))),
+                      focusedBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
+                              borderRadius: BorderRadius.circular(10)),
+                      enabledBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Số điện thoại
+                  TextField(
+                    controller: phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    style: TextStyle(color: darkTextColor),
+                    decoration: InputDecoration(
+                      labelText: 'Số điện thoại',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon:
+                          const Icon(Icons.phone_outlined, color: vietnamYellow),
+                      border: const OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10))),
+                      focusedBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
+                              borderRadius: BorderRadius.circular(10)),
+                      enabledBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Phân cách mật khẩu
+                  Text(
+                    'Thay đổi mật khẩu (tùy chọn)',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: vietnamRed),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: oldPassCtrl,
+                    obscureText: true,
+                    style: TextStyle(color: darkTextColor),
+                    decoration: InputDecoration(
+                      labelText: 'Mật khẩu cũ',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon:
+                          const Icon(Icons.lock_outline, color: vietnamYellow),
+                      border: const OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10))),
+                      focusedBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
+                              borderRadius: BorderRadius.circular(10)),
+                      enabledBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newPassCtrl,
+                    obscureText: true,
+                    style: TextStyle(color: darkTextColor),
+                    decoration: InputDecoration(
+                      labelText: 'Mật khẩu mới',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon:
+                          const Icon(Icons.lock_outline, color: vietnamYellow),
+                      border: const OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10))),
+                      focusedBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
+                              borderRadius: BorderRadius.circular(10)),
+                      enabledBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: confirmPassCtrl,
+                    obscureText: true,
+                    style: TextStyle(color: darkTextColor),
+                    decoration: InputDecoration(
+                      labelText: 'Xác nhận mật khẩu mới',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon:
+                          const Icon(Icons.lock_outline, color: vietnamYellow),
+                      border: const OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10))),
+                      focusedBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
+                              borderRadius: BorderRadius.circular(10)),
+                      enabledBorder:
+                          OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              // Số điện thoại
-              TextField(
-                controller: phoneCtrl,
-                keyboardType: TextInputType.phone,
-                style: TextStyle(color: darkTextColor),
-                decoration: InputDecoration(
-                  labelText: 'Số điện thoại',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                  prefixIcon:
-                      const Icon(Icons.phone_outlined, color: vietnamYellow),
-                  border: const OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(10))),
-                  focusedBorder:
-                      OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
-                          borderRadius: BorderRadius.circular(10)),
-                  enabledBorder:
-                      OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(10)),
-                ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Hủy', style: TextStyle(color: vietnamRed)),
               ),
-              const SizedBox(height: 16),
-              // Phân cách mật khẩu
-              Text(
-                'Thay đổi mật khẩu (tùy chọn)',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: vietnamRed),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: oldPassCtrl,
-                obscureText: true,
-                style: TextStyle(color: darkTextColor),
-                decoration: InputDecoration(
-                  labelText: 'Mật khẩu cũ',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                  prefixIcon:
-                      const Icon(Icons.lock_outline, color: vietnamYellow),
-                  border: const OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(10))),
-                  focusedBorder:
-                      OutlineInputBorder(borderSide: BorderSide(color: vietnamRed, width: 2.0),
-                          borderRadius: BorderRadius.circular(10)),
-                  enabledBorder:
-                      OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: newPassCtrl,
-                obscureText: true,
-                style: TextStyle(color: darkTextColor),
-                decoration: InputDecoration(
-                  labelText: 'Mật khẩu mới',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: confirmPassCtrl,
-                obscureText: true,
-                style: TextStyle(color: darkTextColor),
-                decoration: InputDecoration(
-                  labelText: 'Xác nhận mật khẩu mới',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                ),
+              ElevatedButton(
+                onPressed: isUpdating ? null : () async {
+                  // Validate input
+                  if (nameCtrl.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Tên không được để trống'), backgroundColor: vietnamRed),
+                    );
+                    return;
+                  }
+                  if (phoneCtrl.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Số điện thoại không được để trống'), backgroundColor: vietnamRed),
+                    );
+                    return;
+                  }
+                  bool shouldChangePassword = oldPassCtrl.text.isNotEmpty || newPassCtrl.text.isNotEmpty || confirmPassCtrl.text.isNotEmpty;
+                  if (shouldChangePassword) {
+                    if (oldPassCtrl.text.isEmpty || newPassCtrl.text.isEmpty || confirmPassCtrl.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin mật khẩu'), backgroundColor: vietnamRed),
+                      );
+                      return;
+                    }
+                    if (newPassCtrl.text != confirmPassCtrl.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Mật khẩu mới và xác nhận không khớp'), backgroundColor: vietnamRed),
+                      );
+                      return;
+                    }
+                    if (newPassCtrl.text.length < 6) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Mật khẩu mới phải ít nhất 6 ký tự'), backgroundColor: vietnamRed),
+                      );
+                      return;
+                    }
+                  }
+
+                  setDialogState(() => isUpdating = true);
+
+                  try {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) throw Exception('Không tìm thấy user');
+
+                    // Cập nhật Firestore cho tên và phone
+                    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+                      'name': nameCtrl.text.trim(),
+                      'phone': phoneCtrl.text.trim(),
+                    });
+
+                    // Cập nhật mật khẩu nếu cần
+                    if (shouldChangePassword) {
+                      // Reauthenticate
+                      final credential = EmailAuthProvider.credential(
+                        email: user.email!,
+                        password: oldPassCtrl.text,
+                      );
+                      await user.reauthenticateWithCredential(credential);
+
+                      // Update password
+                      await user.updatePassword(newPassCtrl.text);
+                    }
+
+                    // Reload user info
+                    await _loadUserInfo();
+
+                    // Đóng dialog
+                    Navigator.of(context).pop();
+
+                    // Thông báo thành công
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(shouldChangePassword ? 'Cập nhật thành công, bao gồm mật khẩu!' : 'Cập nhật thông tin thành công!'),
+                          backgroundColor: vietnamYellow,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    // Thông báo lỗi
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Lỗi cập nhật: $e'), backgroundColor: vietnamRed),
+                      );
+                    }
+                  } finally {
+                    if (Navigator.canPop(context)) {
+                      setDialogState(() => isUpdating = false);
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: vietnamRed),
+                child: isUpdating
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(lightTextColor),
+                        ),
+                      )
+                    : Text('Cập nhật', style: TextStyle(color: lightTextColor)),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Hủy', style: TextStyle(color: vietnamRed)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              // Logic update (bạn có thể expand sau)
-              Navigator.of(context).pop();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: vietnamRed),
-            child: Text('Cập nhật', style: TextStyle(color: lightTextColor)),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

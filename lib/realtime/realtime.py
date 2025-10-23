@@ -3,7 +3,7 @@ import math
 from datetime import datetime
 import sys
 
-# Dữ liệu locations (tương tự Dart, với lat/lng)
+# Dữ liệu locations (chỉ liên quan đến đồ ăn uống)
 locations_by_category = {
     'Bánh mì': [
         {'name': 'Bánh mì Má Hải', 'address': '792 XLHN, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'lat': 10.8665, 'lng': 106.7900},
@@ -46,7 +46,7 @@ locations_by_category = {
     ],
 }
 
-# Đề xuất món dựa trên khung giờ
+# Đề xuất món dựa trên khung giờ (chỉ đồ ăn uống)
 suggestions_by_time_slot = {
     'sáng': ['Bánh mì', 'Cafe', 'Nước mía'],
     'trưa': ['Cơm', 'Mì cay', 'Bún bò'],
@@ -79,13 +79,23 @@ def generate_recommendations(lat, lng, time_slot=None):
     """Generate recommendations"""
     if time_slot is None:
         time_slot = detect_time_slot()
+    
+    # Lời chào hỏi dựa trên khung giờ
+    greetings = {
+        'sáng': 'Chào buổi sáng! Đây là các gợi ý đồ ăn sáng gần bạn:',
+        'trưa': 'Chào buổi trưa! Đây là các gợi ý đồ ăn trưa gần bạn:',
+        'tối': 'Chào buổi tối! Đây là các gợi ý đồ ăn tối gần bạn:',
+        'khác': 'Chào bạn! Đây là các gợi ý đồ ăn uống gần bạn:'
+    }
+    greeting = greetings.get(time_slot, greetings['khác'])
+    
     suggestions = suggestions_by_time_slot.get(time_slot, ['Bánh mì'])
     all_locs = []
     for category in suggestions:
         locations = locations_by_category.get(category, [])
         for loc in locations:
-            loc_lat = loc.get('lat', 21.0278)
-            loc_lng = loc.get('lng', 105.8342)
+            loc_lat = loc.get('lat', 10.8665)
+            loc_lng = loc.get('lng', 106.7900)
             distance = haversine_distance(lat, lng, loc_lat, loc_lng)
             loc_copy = loc.copy()
             loc_copy['category'] = category
@@ -94,15 +104,16 @@ def generate_recommendations(lat, lng, time_slot=None):
     # Sort theo khoảng cách
     all_locs.sort(key=lambda x: x['distance'])
     return {
+        'greeting': greeting,
         'time_slot': time_slot,
         'current_time': datetime.now().strftime('%H:%M'),
         'recommendations': all_locs[:5]  # Top 5
     }
 
 if __name__ == "__main__":
-    # Ví dụ sử dụng: python realtime.py <lat> <lng>
+    # Sử dụng: python realtime.py <lat> <lng>
     if len(sys.argv) != 3:
-        print(json.dumps(generate_recommendations(21.0278, 105.8342)))  # Default Hà Nội
+        print(json.dumps(generate_recommendations(10.8665, 106.7900)))  # Default TP.HCM
     else:
         lat = float(sys.argv[1])
         lng = float(sys.argv[2])

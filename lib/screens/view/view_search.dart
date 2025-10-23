@@ -22,7 +22,7 @@ class ViewSearch extends StatefulWidget {
 class _ViewSearchState extends State<ViewSearch> {
   final TextEditingController _searchController = TextEditingController();
   String _mapEmbedUrl = '';
-  String _currentViewType = '';
+  String _currentViewType = 'search-google-maps-iframe'; // Fixed viewType giống home_user.dart
   LatLng? _currentPosition;
 
   // --- Bảng màu Cờ Đỏ Sao Vàng ---
@@ -47,6 +47,26 @@ class _ViewSearchState extends State<ViewSearch> {
       _updateMapUrl(_currentPosition!);
     } else {
       _loadCurrentPosition();
+    }
+    // Register factory một lần với viewType fixed, sẽ update src sau
+    if (kIsWeb) {
+      try {
+        ui.platformViewRegistry.registerViewFactory(
+          _currentViewType,
+          (int viewId) {
+            final iframe = html.IFrameElement()
+              ..width = '100%'
+              ..height = '100%'
+              ..src = _mapEmbedUrl.isNotEmpty ? _mapEmbedUrl : _generateEmbedUrl(_defaultPosition.latitude, _defaultPosition.longitude)
+              ..style.border = 'none'
+              ..allowFullscreen = true
+              ..allow = 'geolocation; microphone; camera';
+            return iframe;
+          },
+        );
+      } catch (e) {
+        debugPrint('Lỗi register search map iframe: $e');
+      }
     }
   }
 
@@ -93,26 +113,23 @@ class _ViewSearchState extends State<ViewSearch> {
 
   void _updateMapUrl(LatLng position) {
     _mapEmbedUrl = _generateEmbedUrl(position.latitude, position.longitude);
-    _currentViewType = 'search-map-iframe-${DateTime.now().millisecondsSinceEpoch}';
-    if (kIsWeb) {
-      try {
-        ui.platformViewRegistry.registerViewFactory(
-          _currentViewType,
-          (int viewId) {
-            final iframe = html.IFrameElement()
-              ..width = '100%'
-              ..height = '100%'
-              ..src = _mapEmbedUrl
-              ..style.border = 'none'
-              ..allowFullscreen = true;
-            return iframe;
-          },
-        );
-      } catch (e) {
-        debugPrint('Lỗi register search map iframe: $e');
-      }
+    if (kIsWeb && mounted) {
+      // Re-register factory với src mới, viewType fixed giống home_user.dart
+      ui.platformViewRegistry.registerViewFactory(
+        _currentViewType,
+        (int viewId) {
+          final iframe = html.IFrameElement()
+            ..width = '100%'
+            ..height = '100%'
+            ..src = _mapEmbedUrl
+            ..style.border = 'none'
+            ..allowFullscreen = true
+            ..allow = 'geolocation; microphone; camera';
+          return iframe;
+        },
+      );
+      setState(() {});
     }
-    if (mounted) setState(() {});
   }
 
   String _generateEmbedUrl(double lat, double lng, {int zoom = 15}) {
@@ -280,47 +297,35 @@ class _ViewSearchState extends State<ViewSearch> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Bản đồ nhỏ (sẽ cập nhật tự động khi có vị trí)
-              Card(
-                elevation: 4,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                shadowColor: Colors.black.withOpacity(0.1),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(
-                        'Bản đồ vị trí',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: vietnamRed),
+              // Bản đồ nhỏ (giao diện giống home_user.dart: Container height 180, decoration border + shadow, không Card/title)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: vietnamYellow.withOpacity(0.5)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: vietnamYellow.withOpacity(0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
-                    Container(
-                      height: 200,
-                      width: double.infinity,
-                      child: _mapEmbedUrl.isEmpty
-                          ? const Center(child: CircularProgressIndicator())
-                          : kIsWeb
-                              ? ClipRRect(
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(15),
-                                    bottomRight: Radius.circular(15),
-                                  ),
-                                  child: HtmlElementView(viewType: _currentViewType),
-                                )
-                              : Center(
-                                  child: Text(
-                                    'Bản đồ chỉ hỗ trợ trên web. Vị trí: ${_currentPosition?.latitude.toStringAsFixed(4)}, ${_currentPosition?.longitude.toStringAsFixed(4)}',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _mapEmbedUrl.isEmpty
+                        ? Center(child: CircularProgressIndicator(color: vietnamRed))
+                        : kIsWeb
+                            ? const HtmlElementView(viewType: 'search-google-maps-iframe')
+                            : Center(
+                                child: Text(
+                                  'Bản đồ chỉ hỗ trợ trên web',
+                                  style: TextStyle(color: vietnamYellow.withOpacity(0.8)),
                                 ),
-                    ),
-                  ],
+                              ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
