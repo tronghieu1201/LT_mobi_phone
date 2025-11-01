@@ -33,7 +33,7 @@ class _ViewFoodState extends State<ViewFood> {
   static const LatLng _defaultPosition = LatLng(21.0278, 105.8342);
 
   // Categories from propose.dart for food
-  final List<String> _foodCategories = ['Bánh mì', 'Mỳ cay', 'Cơm sườn', 'Bún bò'];
+  final List<String> _foodCategories = ['Bánh mì', 'Mì cay', 'Cơm', 'Bún bò'];
 
   @override
   void initState() {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import 'register_screen.dart';
 import 'home_admin.dart';
@@ -46,7 +47,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateBasedOnRole() async {
-    // ... (Toàn bộ logic này giữ nguyên) ...
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final role = await _getRoleFromUid(user.uid);
@@ -82,7 +82,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<String?> _getRoleFromUid(String uid) async {
-    // ... (Toàn bộ logic này giữ nguyên) ...
     DocumentSnapshot userDoc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (userDoc.exists) {
@@ -106,14 +105,35 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  // CẬP NHẬT: _navigateToHome() - Tách riêng để dùng chung cho email và Google
+  void _navigateToHome(String role, String email) {
+    if (mounted) {
+      if (role == 'admin') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeAdminScreen()));
+      } else if (role == 'user') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeUserScreen()));
+      } else if (role == 'store') {
+        if (email == 'store1@gmail.com') {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeStore1Screen()));
+        } else if (email == 'store2@gmail.com') {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeStore2Screen()));
+        } else if (email == 'store3@gmail.com') {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
+        }
+      }
+    }
+  }
+
+  // FIX: _login() - Bỏ const khỏi SnackBar, dùng Colors.red[600] trực tiếp
   void _login() async {
-    // ... (Toàn bộ logic này giữ nguyên, chỉ đổi màu SnackBar) ...
     if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          SnackBar(  // BỎ const
             content: const Text('Vui lòng nhập đầy đủ thông tin'),
-            backgroundColor: Colors.red[600], // Màu đỏ cảnh báo
+            backgroundColor: Colors.red[600], // Giữ nguyên
           ),
         );
       }
@@ -125,46 +145,40 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      final role = await _authService.login(
+      final roleOrError = await _authService.login(
         email: emailCtrl.text.trim(),
         password: passCtrl.text.trim(),
       );
 
+      if (mounted) setState(() => loading = false);
+
       final email = emailCtrl.text.trim();
 
-      if (role != null && role != 'null') {
-        if (mounted) {
-          if (role == 'admin') {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (_) => const HomeAdminScreen()));
-          } else if (role == 'user') {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (_) => const HomeUserScreen()));
-          } else if (role == 'store') {
-            if (email == 'store@gmail.com') {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
-            } else if (email == 'store1@gmail.com') {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const HomeStore1Screen()));
-            } else if (email == 'store2@gmail.com') {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const HomeStore2Screen()));
-            } else if (email == 'store3@gmail.com') {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const HomeStore3Screen()));
-            } else {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const HomeStoreScreen()));
+      if (roleOrError != null && roleOrError != 'null') {
+        if (roleOrError.startsWith('Lỗi') || roleOrError == null) {  // Error handling
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(  // BỎ const
+              content: Text(roleOrError ?? 'Sai thông tin đăng nhập'),
+              backgroundColor: Colors.red[600],
+            ),
+          );
+        } else {
+          // THÊM: Lưu token vào SharedPreferences sau đăng nhập thành công
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            final token = await user.getIdToken();
+            if (token != null) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('auth_token', token);
             }
           }
+          _navigateToHome(roleOrError, email);
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content:
-                  const Text('Sai thông tin đăng nhập hoặc tài khoản bị vô hiệu hóa'),
+            SnackBar(  // BỎ const
+              content: const Text('Sai thông tin đăng nhập hoặc tài khoản bị vô hiệu hóa'),
               backgroundColor: Colors.red[600],
             ),
           );
@@ -172,16 +186,63 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        setState(() => loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          SnackBar(  // BỎ const
             content: Text('Lỗi: ${e.toString()}'),
             backgroundColor: Colors.red[600],
           ),
         );
       }
-    } finally {
+    }
+  }
+
+  // FIX: _googleLogin() - Bỏ const khỏi SnackBar
+  void _googleLogin() async {
+    if (mounted) setState(() => loading = true);
+
+    try {
+      final roleOrError = await _authService.googleSignIn();
+      if (mounted) setState(() => loading = false);
+
+      if (roleOrError != null && roleOrError != 'null') {
+        if (roleOrError.startsWith('Lỗi')) {  // Nếu là error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(  // BỎ const
+              content: Text(roleOrError),
+              backgroundColor: Colors.red[600],
+            ),
+          );
+          return;
+        }
+        // THÊM: Lưu token vào SharedPreferences sau đăng nhập Google thành công
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final token = await user.getIdToken();
+          if (token != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('auth_token', token);
+          }
+        }
+        final email = user?.email ?? '';
+        _navigateToHome(roleOrError, email);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(  // BỎ const
+            content: const Text('Đăng nhập Google thất bại. Vui lòng thử lại.'),
+            backgroundColor: Colors.red[600],
+          ),
+        );
+      }
+    } catch (e) {
       if (mounted) {
         setState(() => loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(  // BỎ const
+            content: Text('Lỗi bất ngờ: ${e.toString()}'),
+            backgroundColor: Colors.red[600],
+          ),
+        );
       }
     }
   }
@@ -200,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            // Hình ảnh đại diện khi vào app
+            // Hình ảnh đại diện khi vào app - GIỮ NGUYÊN
             Container(
               height: 200,
               width: double.infinity,
@@ -223,34 +284,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            // Xin chào quý khách với icon cờ Việt Nam (căn giữa)
+            // SỬA: Xin chào quý khách với icon cờ Việt Nam (căn giữa) - Wrap trong FittedBox để fix overflow
             Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "Xin chào quý khách",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+              child: FittedBox(  // THÊM: Scale toàn bộ Row nếu text dài gây overflow
+                fit: BoxFit.scaleDown,  // Scale nếu cần, không crop
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Xin chào quý khách",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: vietnamRed, // Chữ tiêu đề màu đỏ cờ
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: Image.asset(
-                      'assets/img/VietNam.png',
-                      fit: BoxFit.contain,
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Image.asset(
+                        'assets/img/VietNam.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 30),
 
-            // Form trong Card
+            // Form trong Card - GIỮ NGUYÊN TextFields
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -309,6 +373,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 25),
+                    // Nút Đăng nhập email/password - GIỮ NGUYÊN
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -336,11 +401,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                     color: lightTextColor)), // Chữ TRẮNG
                       ),
                     ),
+                    // GIỮ NGUYÊN: Nút Đăng nhập bằng Google
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton.icon(
+                        onPressed: loading ? null : _googleLogin,
+                        icon: Image.asset('assets/img/google_logo.png', height: 24, width: 24),  // Icon Google
+                        label: Text('', style: TextStyle(fontSize: 16, color: vietnamRed)),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: vietnamYellow),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
+            // Link Đăng ký - GIỮ NGUYÊN
             TextButton.icon(
               onPressed: () {
                 Navigator.push(context,

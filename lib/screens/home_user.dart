@@ -1,3 +1,4 @@
+// Updated file: home_user.dart (Direct navigation for 'magic' type to ProposeV2 with 'Chè' category, skipping ViewMagic)
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui_web' as ui;
@@ -9,12 +10,15 @@ import 'login_screen.dart';
 import 'view/view_search.dart';
 import 'view/view_food.dart';
 import 'view/view_drink.dart';
+// Removed import for view_magic.dart since we're skipping it for 'magic'
 import 'view/view_user.dart';
+import 'view/view_v2/propose_v2.dart'; // FIXED: Sửa lại đường dẫn import
 import '../realtime/result/result.dart'; // Import mới cho ResultScreen
 import 'dart:async'; // Cho Timer auto-scroll
 import 'dart:convert'; // Thêm cho JSON
 import 'package:http/http.dart' as http; // Thêm cho HTTP request
 import 'package:flutter/foundation.dart' as foundation; // Đổi tên để tránh conflict với kIsWeb
+import 'package:shared_preferences/shared_preferences.dart'; // NEW: For loading dynamic categories
 
 class HomeUserScreen extends StatefulWidget {
   const HomeUserScreen({Key? key}) : super(key: key);
@@ -35,6 +39,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
   static Color lightTextColor = Colors.white;
   static Color backgroundColor = Colors.grey[50]!;
 
+  // NEW: Dynamic categories loaded from SharedPreferences
+  List<Map<String, dynamic>> _categories = [];
+  bool _isLoadingCategories = true; // NEW: Loading state to prevent early build
+
   // (Giữ nguyên phần định nghĩa các list vouchers, controllers, timers...)
   // Auto-scroll cho vouchers
   final List<String> _voucherImages = [
@@ -48,9 +56,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 
   // Auto-scroll cho buổi sáng
   final List<String> _morningImages = [
-    'assets/img/sang2.jpg',
-    'assets/img/sang3.jpg',
-    'assets/img/sang4.jpg',
+    'assets/img/5.jpg',
+    'assets/img/2.jpg',
+    'assets/img/4.jpg', 
+    'assets/img/3.jpg',
   ];
   final PageController _morningController = PageController();
   int _currentMorningIndex = 0;
@@ -58,9 +67,9 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 
   // Auto-scroll cho buổi trưa
   final List<String> _afternoonImages = [
-    'assets/img/trua1.jpg',
-    'assets/img/trua2.jpg',
-    'assets/img/trua3.jpg',
+    'assets/img/6.jpg',
+    'assets/img/1.jpg',
+    'assets/img/7.png',
   ];
   final PageController _afternoonController = PageController();
   int _currentAfternoonIndex = 0;
@@ -68,9 +77,9 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 
   // Auto-scroll cho buổi tối
   final List<String> _eveningImages = [
-    'assets/img/toi1.jpg',
-    'assets/img/toi2.jpg',
-    'assets/img/toi3.jpg',
+    'assets/img/OIP.webp',
+    'assets/img/9.webp',
+    'assets/img/10.jpg',
   ];
   final PageController _eveningController = PageController();
   int _currentEveningIndex = 0;
@@ -238,9 +247,93 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     );
   }
 
+  // NEW: Load dynamic categories from SharedPreferences
+  Future<void> _loadCategories() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final categoriesJson = prefs.getString('home_categories');
+      if (categoriesJson != null) {
+        final List<dynamic> decoded = jsonDecode(categoriesJson);
+        setState(() {
+          _categories = decoded.map((x) => Map<String, dynamic>.from(x)).toList();
+          // Ensure all fields are set correctly
+          _categories.removeWhere((cat) => cat['label'] == null || cat['icon'] == null);
+          _categories.forEach((cat) {
+            cat['icon'] ??= 'Icons.help_outline';
+            cat['type'] ??= 'developing';
+            cat['visible'] ??= true;
+            // FIXED: Ensure correct types for specific labels
+            if (cat['label'] == 'Đồ ăn') cat['type'] = 'food';
+            if (cat['label'] == 'Đồ uống') cat['type'] = 'drink';
+            if (cat['label'] == 'Tin nhắn') cat['type'] = 'magic';
+          });
+        });
+      } else {
+        _setDefaultCategories();
+      }
+    } catch (e) {
+      debugPrint('Error decoding categories: $e');
+      _setDefaultCategories();
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingCategories = false);
+      }
+    }
+  }
+
+  void _setDefaultCategories() {
+    setState(() {
+      _categories = [
+        {'label': 'Đồ ăn', 'icon': 'Icons.restaurant', 'type': 'food', 'visible': true},
+        {'label': 'Đi chợ', 'icon': 'Icons.shopping_cart', 'type': 'developing', 'visible': true},
+        {'label': 'Đồ uống', 'icon': 'Icons.local_drink', 'type': 'drink', 'visible': true},
+        {'label': 'Giao hàng', 'icon': 'Icons.delivery_dining', 'type': 'developing', 'visible': true},
+        {'label': 'Tin nhắn', 'icon': 'Icons.message', 'type': 'magic', 'visible': true},
+        {'label': 'Tính cách của bạn', 'icon': 'Icons.psychology', 'type': 'developing', 'visible': true},
+        {'label': 'Ưu ái', 'icon': 'Icons.favorite', 'type': 'developing', 'visible': true},
+        {'label': 'Mua nợ', 'icon': 'Icons.payment', 'type': 'developing', 'visible': true},
+      ];
+      _isLoadingCategories = false;
+    });
+  }
+
+  // FIXED: Get onTap callback based on type - For 'magic', direct to ProposeV2 with 'Chè' category (skip ViewMagic)
+  VoidCallback? _getCategoryOnTap(String? type) {
+    if (type == 'food') {
+      return () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ViewFood(currentPosition: _currentPosition),
+        ),
+      );
+    } else if (type == 'drink') {
+      return () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ViewDrink(currentPosition: _currentPosition),
+        ),
+      );
+    } else if (type == 'magic') { // FIXED: Direct to ProposeV2 with category 'Chè' (skip ViewMagic, go straight to Hình 2)
+      return () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProposeV2(),
+          settings: RouteSettings(
+            name: '/propose_v2',
+            arguments: {'currentPosition': _currentPosition, 'category': 'Chè'},
+          ),
+        ),
+      );
+    } else {
+      return _showDevelopingSnackBar; // All others show developing
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _isLoadingCategories = true;
+    _loadCategories(); // NEW: Load categories
     _loadCurrentLocation();
     if (foundation.kIsWeb) {
       try {
@@ -265,9 +358,9 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
       }
     }
 
-    // Timer auto-scroll cho vouchers (2s mỗi hình)
+    // Timer auto-scroll cho vouchers (2s mỗi hình) - FIXED: Check hasClients
     _voucherTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (mounted) {
+      if (mounted && _voucherController.hasClients) {
         _currentVoucherIndex =
             (_currentVoucherIndex + 1) % _voucherImages.length;
         _voucherController.animateToPage(
@@ -278,10 +371,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
       }
     });
 
-    // Timer cho buổi sáng (delay 0.5s để không đồng bộ)
+    // Timer cho buổi sáng (delay 0.5s để không đồng bộ) - FIXED: Check hasClients
     Timer(const Duration(milliseconds: 500), () {
       _morningTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-        if (mounted) {
+        if (mounted && _morningController.hasClients) {
           _currentMorningIndex =
               (_currentMorningIndex + 1) % _morningImages.length;
           _morningController.animateToPage(
@@ -293,10 +386,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
       });
     });
 
-    // Timer cho buổi trưa (delay 1s)
+    // Timer cho buổi trưa (delay 1s) - FIXED: Check hasClients
     Timer(const Duration(seconds: 1), () {
       _afternoonTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-        if (mounted) {
+        if (mounted && _afternoonController.hasClients) {
           _currentAfternoonIndex =
               (_currentAfternoonIndex + 1) % _afternoonImages.length;
           _afternoonController.animateToPage(
@@ -308,10 +401,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
       });
     });
 
-    // Timer cho buổi tối (delay 1.5s)
+    // Timer cho buổi tối (delay 1.5s) - FIXED: Check hasClients
     Timer(const Duration(milliseconds: 1500), () {
       _eveningTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-        if (mounted) {
+        if (mounted && _eveningController.hasClients) {
           _currentEveningIndex =
               (_currentEveningIndex + 1) % _eveningImages.length;
           _eveningController.animateToPage(
@@ -584,77 +677,66 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                       ),
                     ),
                   const SizedBox(height: 16),
-                  // Các button category (Gọi hàm _buildCategoryButton đã sửa ở dưới)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        _buildCategoryButton(
-                          'Đồ ăn',
-                          Icons.restaurant,
-                          vietnamYellow,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ViewFood(currentPosition: _currentPosition),
+                  // NEW: Dynamic category buttons (all shown, but disabled/faded if !visible)
+                  if (_isLoadingCategories)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 20.0),
+                      child: Center(child: CircularProgressIndicator(color: vietnamYellow)),
+                    )
+                  else if (_categories.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        alignment: WrapAlignment.center,
+                        children: _categories.map((cat) {
+                          final label = cat['label'] as String? ?? 'Unknown';
+                          final isVisible = (cat['visible'] as bool? ?? true);
+                          final type = cat['type'] as String? ?? 'developing';
+                          final onTap = isVisible ? _getCategoryOnTap(type) : null;
+                          final iconData = _parseIconData(cat['icon'] as String?);
+                          return Opacity(
+                            opacity: isVisible ? 1.0 : 0.5,
+                            child: InkWell(
+                              onTap: onTap,
+                              borderRadius: BorderRadius.circular(20),
+                              child: IgnorePointer(
+                                ignoring: !isVisible,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: vietnamYellow.withOpacity(isVisible ? 0.3 : 0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(iconData, color: vietnamYellow, size: 20),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        label,
+                                        style: TextStyle(
+                                          color: darkTextColor,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        _buildCategoryButton(
-                          'Đi chợ',
-                          Icons.shopping_cart,
-                          vietnamYellow,
-                          _showDevelopingSnackBar,
-                        ),
-                        _buildCategoryButton(
-                          'Đồ uống',
-                          Icons.local_drink,
-                          vietnamYellow,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ViewDrink(currentPosition: _currentPosition),
-                            ),
-                          ),
-                        ),
-                        _buildCategoryButton(
-                          'Giao hàng',
-                          Icons.delivery_dining,
-                          vietnamYellow,
-                          _showDevelopingSnackBar,
-                        ),
-                        _buildCategoryButton(
-                          'Tin nhắn',
-                          Icons.message,
-                          vietnamYellow,
-                          _showDevelopingSnackBar,
-                        ),
-                        _buildCategoryButton(
-                          'Tính cách của bạn',
-                          Icons.psychology,
-                          vietnamYellow,
-                          _showDevelopingSnackBar,
-                        ),
-                        _buildCategoryButton(
-                          'Ưu ái',
-                          Icons.favorite,
-                          vietnamYellow,
-                          _showDevelopingSnackBar,
-                        ),
-                        _buildCategoryButton(
-                          'Mua nợ',
-                          Icons.payment,
-                          vietnamYellow,
-                          _showDevelopingSnackBar,
-                        ),
-                      ],
+                          );
+                        }).toList(),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 20),
                   // Section Khuyến mãi
                   Padding(
@@ -675,7 +757,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                             itemCount: _voucherImages.length,
                             itemBuilder: (context, index) {
                               return GestureDetector(
-                                onTap: _showDevelopingSnackBar,
+                                onTap: _showDevelopingSnackBar, // FIXED: Correct function name
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 4.0), // GIẢM padding ngang từ 8 xuống 4 để gọn gàng hơn
                                   child: ClipRRect(
@@ -1021,7 +1103,44 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     );
   }
 
-  // Helper build category button
+  // NEW: Helper to parse icon string to IconData - FIXED: Handle null and invalid
+  IconData _parseIconData(String? iconStr) {
+    if (iconStr == null || iconStr.isEmpty) {
+      return Icons.help_outline;
+    }
+    final parts = iconStr.split('.');
+    if (parts.length != 2 || parts[0] != 'Icons') {
+      return Icons.help_outline;
+    }
+    final name = parts[1];
+    return _getIconByName(name);
+  }
+
+  // NEW: Map string name to IconData
+  IconData _getIconByName(String name) {
+    switch (name) {
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'local_drink':
+        return Icons.local_drink;
+      case 'delivery_dining':
+        return Icons.delivery_dining;
+      case 'message':
+        return Icons.message;
+      case 'psychology':
+        return Icons.psychology;
+      case 'favorite':
+        return Icons.favorite;
+      case 'payment':
+        return Icons.payment;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  // Helper build category button (deprecated, but kept for reference)
   Widget _buildCategoryButton(
       String label, IconData icon, Color color, VoidCallback onTap) {
     return InkWell(

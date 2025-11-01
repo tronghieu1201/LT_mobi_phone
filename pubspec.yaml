@@ -24,6 +24,9 @@ dependencies:
   firebase_storage: ^13.0.3  # Cập nhật từ 12.3.3
   provider: ^6.1.5+1  # Cập nhật từ 6.1.2
 
+  # SỬA: Downgrade về ^6.2.1 (stable, tránh breaking changes v7)
+  google_sign_in: ^6.2.1
+
   # Định dạng số, tiền tệ, ngày giờ
   intl: ^0.20.2  # Cập nhật từ 0.19.0
 
@@ -42,6 +45,12 @@ dependencies:
 
   # HTTP cho chatbot API
   http: ^1.5.0  # Cập nhật từ 1.2.2
+
+  # Lưu trữ local (thêm để hỗ trợ SharedPreferences)
+  shared_preferences: ^2.5.3  # Phiên bản mới nhất (tính đến 2025)
+
+  # THÊM: Để hỗ trợ chọn file trong view_ad_home.dart
+  file_picker: ^6.1.1  # Phiên bản ổn định mới nhất (cập nhật theo yêu cầu code)
 
 dev_dependencies:
   flutter_test:

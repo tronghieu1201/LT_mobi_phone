@@ -29,26 +29,24 @@ class _OutstandingState extends State<Outstanding> {
 
   final Map<String, List<Map<String, String>>> _locationsByCategory = {
     'GS25': [
-      {'name': 'GS25 Man Thiện', 'address': '123 Man Thiện, Phường Tân Phú, Quận 9, Thành phố Hồ Chí Minh, Việt Nam'},
-      {'name': 'GS25 - ĐH GTVT', 'address': '449 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
-      {'name': 'GS25 Võ Văn Ngân', 'address': '01 Đ. Võ Văn Ngân, Linh Chiểu, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
-      {'name': 'GS25 Hồ Thị Tư', 'address': '52 Hồ Thị Tư, Hiệp Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
+      {'name': 'GS25', 'address': '113 Đ. Tam Hà, Tam Phú, Thủ Đức, Thành phố Hồ Chí Minh 70000, Việt Nam'},
+      {'name': 'GS25 Phú Châu', 'address': '20 Phú Châu, Tam Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
     ],
     'Jollibee': [
-      {'name': 'Jollibee CoopMart Xa Lộ Hà Nội', 'address': '191 Quang Trung, Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '02837307554'},
+      {'name': 'Jollibee Tô Ngọc Vân', 'address': '238-238A Đ. Tô Ngọc Vân, Khu Phố 3, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam', 'phone': '02873026879'},
     ],
     'Ministop': [
-      {'name': 'MINISTOP-HUTECH KHU E', 'address': 'Việt Nam, Thành phố Hồ Chí Minh, Thủ Đức, Hiệp Phú, Song Hành Xa Lộ Hà Nội', 'phone': '02835106870'},
+      {'name': 'CHTL - MINISTOP - S240 - Kha Vạn Cân', 'address': '819 Đ. Kha Vạn Cân, Linh Chiểu, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
     ],
     'Highlands': [
-      {'name': 'Highlands coffee HUTECH khu E', 'address': 'VQ4P+28C, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
-      {'name': 'Highlands Coffee Song Hành - Thủ Đức', 'address': '15-16 Song Hành Xa Lộ Hà Nội, Phường, Thủ Đức, Thành phố Hồ Chí Minh 70000, Việt Nam', 'phone': '02871084459'},
+      {'name': 'Highlands Coffee Lê Trọng Tấn Bình Dương', 'address': '133 Lê Trọng Tấn, An Bình, Dĩ An, Bình Dương 75000, Việt Nam', 'phone': '02747300669'},
+      {'name': 'Highlands Coffee Flora Thủ Đức', 'address': 'Tòa nhà Flora Novia, Đ. Phạm Văn Đồng, Thủ Đức, Thành phố Hồ Chí Minh 70000, Việt Nam', 'phone': '02871091452'},
     ],
     'Phu Long': [
-      {'name': 'Phuc Long Coffee & Tea (Phúc Long Hutech Q.9)', 'address': '10/80c XLHN, Phường Tân Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'},
+      {'name': 'Phúc Long Tea & Coffee - 1012 Kha Vạn Cân', 'address': '1012 Đ. Kha Vạn Cân, Linh Chiểu, Thủ Đức, Thành phố Hồ Chí Minh 70000, Việt Nam'},
     ],
     'HTNG': [
-      {'name': 'Hồng Trà Ngô Gia H170', 'address': '159 Lê Văn Chí, Phường Linh Trung, Thủ Đức, Thành phố Hồ Chí Minh 70000, Việt Nam', 'phone': '0981545896'},
+      {'name': 'Hồng Trà Ngô Gia H247', 'address': '106 Đ. An Bình, An Bình, Dĩ An, Bình Dương, Việt Nam', 'phone': '0989580247'},
     ],
   };
 
@@ -95,87 +93,80 @@ class _OutstandingState extends State<Outstanding> {
     return 'https://www.google.com/maps/dir/?api=1&origin=$encodedOrigin&destination=$encodedDest&travelmode=driving';
   }
 
-  // Lưu lịch sử tìm kiếm vào Firebase
-  Future<void> _saveToHistory(String name, String address) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    final uid = user.uid;
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      String collection = 'users';
-      if (!doc.exists) {
-        doc = await FirebaseFirestore.instance.collection('store').doc(uid).get();
-        collection = 'store';
-      }
-      if (!doc.exists) return;
-      Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-      List<dynamic> history = List.from(userData['history'] ?? []);
-      String fullName = '$name - $address';
-      Map<String, dynamic> entry = {
-        'name': fullName,
-        'timestamp': DateTime.now(),  // Timestamp client-side
-      };
-      // Xóa duplicate nếu có trong 10 item gần nhất
-      history.removeWhere((item) => item['name'] == fullName && history.indexOf(item) >= history.length - 10);
-      history.insert(0, entry);
-      if (history.length > 50) {
-        history = history.sublist(0, 50);
-      }
-      await FirebaseFirestore.instance.collection(collection).doc(uid).update({'history': history});
-      print('✅ Lưu lịch sử tìm kiếm thành công: $fullName');
-    } catch (e) {
-      print('Error saving history: $e');
-    }
-  }
-
-  Future<void> _launchMaps(String locationName, String address) async {
+  Future<void> _launchMaps(String name, String address) async {
     final origin = widget.currentPosition ?? _defaultPosition;
-    final destination = '$locationName, $address';
+    final destination = '$name, $address';
     final url = _generateDirectionsUrl(origin, destination);
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể mở Google Maps'), backgroundColor: vietnamRed),
-        );
-      }
+      throw 'Không thể mở Google Maps';
     }
-    // Lưu lịch sử sau khi mở maps
-    await _saveToHistory(locationName, address);
   }
 
-  // Hàm reload vị trí
-  Future<void> _loadCurrentPositionForOutstanding() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+  // Lưu lịch sử tìm kiếm vào Firebase - SỬA: Không phân biệt auth method, tự tạo doc nếu chưa có, init cơ bản cho user mới
+  Future<void> _saveToHistory(String name, String address) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('❌ Không có user Auth khi lưu history');
       return;
     }
+    final uid = user.uid;
+    final email = user.email ?? '';
+    try {
+      // Ưu tiên users collection cho tất cả user (Gmail hay email/password)
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      String collection = 'users';
+      bool docExists = doc.exists;
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return;
+      // Nếu không có trong users, thử store (fallback cho store user, nhưng ưu tiên users)
+      if (!docExists) {
+        doc = await FirebaseFirestore.instance.collection('store').doc(uid).get();
+        collection = 'store';
+        docExists = doc.exists;
       }
+
+      Map<String, dynamic> userData = docExists ? (doc.data() as Map<String, dynamic>) : {};
+      List<dynamic> history = List.from(userData['history'] ?? []);
+
+      String fullName = '$name - $address';
+      Map<String, dynamic> entry = {
+        'name': fullName,
+        'timestamp': Timestamp.fromDate(DateTime.now()),  // Sử dụng Timestamp Firestore chuẩn
+      };
+
+      // Xóa duplicate nếu có trong 10 item gần nhất
+      history.removeWhere((item) => 
+        item['name'] == fullName && 
+        history.indexOf(item) >= (history.length - 10)
+      );
+      history.insert(0, entry);
+
+      // Giới hạn 50 item
+      if (history.length > 50) {
+        history = history.sublist(0, 50);
+      }
+
+      // Nếu doc chưa tồn tại, tạo mới với data cơ bản (không phân biệt, luôn role 'user')
+      if (!docExists) {
+        print('📝 Tạo doc mới cho user $uid (type: user, email: $email)');
+        await FirebaseFirestore.instance.collection(collection).doc(uid).set({
+          'role': 'user',
+          'enabled': true,
+          'email': email,
+          'history': history,  // Init với entry mới
+          'createdAt': Timestamp.fromDate(DateTime.now()),
+        });
+      } else {
+        // Update nếu tồn tại
+        await FirebaseFirestore.instance.collection(collection).doc(uid).update({
+          'history': history,
+        });
+      }
+      print('✅ Lưu lịch sử thành công: $fullName (collection: $collection)');
+    } catch (e) {
+      print('❌ Error saving history: $e');
     }
-
-    if (permission == LocationPermission.deniedForever) {
-      return;
-    }
-
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    final newPosition = LatLng(position.latitude, position.longitude);
-    setState(() {
-      // Cập nhật UI nếu cần
-    });
-    _updateMapUrl(newPosition);
   }
 
   @override
@@ -183,7 +174,7 @@ class _OutstandingState extends State<Outstanding> {
     final theme = Theme.of(context).copyWith(
       primaryColor: vietnamRed,
       scaffoldBackgroundColor: backgroundColor,
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: vietnamRed),
@@ -197,7 +188,7 @@ class _OutstandingState extends State<Outstanding> {
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${widget.category ?? 'Nổi bật'}', style: TextStyle(color: vietnamRed)),
+              Text('${widget.category ?? 'Nổi bật'}', style: const TextStyle(color: vietnamRed)),
               const SizedBox(width: 8),
               SizedBox(
                 width: 24,
@@ -229,7 +220,7 @@ class _OutstandingState extends State<Outstanding> {
                   padding: const EdgeInsets.all(12.0),
                   child: Text(
                     'Bản đồ vị trí',
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: vietnamRed),
@@ -271,7 +262,7 @@ class _OutstandingState extends State<Outstanding> {
                       children: [
                         Text(
                           'Danh sách ${widget.category} gần đây',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: vietnamRed),
@@ -291,7 +282,7 @@ class _OutstandingState extends State<Outstanding> {
                                 leading: Icon(Icons.store, color: vietnamYellow, size: 24),
                                 title: Text(
                                   location['name']!,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.w500,
                                     color: vietnamRed,
                                   ),
@@ -301,8 +292,10 @@ class _OutstandingState extends State<Outstanding> {
                                   style: TextStyle(color: Colors.grey[600]),
                                 ),
                                 trailing: Icon(Icons.navigation, color: vietnamYellow),
+                                // Gọi _saveToHistory sau _launchMaps (không thay đổi)
                                 onTap: () async {
                                   await _launchMaps(location['name']!, location['address']!);
+                                  await _saveToHistory(location['name']!, location['address']!);
                                 },
                               );
                             },
